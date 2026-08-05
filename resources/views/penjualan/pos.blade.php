@@ -53,7 +53,7 @@
         background: transparent;
         color: #e2e8f0;
     }
-    
+
     .table-cart thead th {
         background-color: rgba(15, 23, 42, 0.8);
         color: #94a3b8;
@@ -83,7 +83,7 @@
         color: #f8fafc !important;
         border-radius: 8px;
     }
-    
+
     .form-control-custom:focus {
         border-color: #3b82f6 !important;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
@@ -99,13 +99,16 @@
     .custom-scroll::-webkit-scrollbar {
         width: 6px;
     }
+
     .custom-scroll::-webkit-scrollbar-track {
         background: rgba(15, 23, 42, 0.5);
     }
+
     .custom-scroll::-webkit-scrollbar-thumb {
         background: #475569;
         border-radius: 4px;
     }
+
     .custom-scroll::-webkit-scrollbar-thumb:hover {
         background: #64748b;
     }
@@ -119,9 +122,11 @@
         border-radius: 16px !important;
         color: #f8fafc !important;
     }
+
     .swal2-title {
         color: #f8fafc !important;
     }
+
     .swal2-html-container {
         color: #94a3b8 !important;
     }
@@ -130,34 +135,30 @@
 
 @section('content')
 <div class="container-fluid px-4 py-4">
-    
-    <div class="pos-wrapper p-4">
 
-        {{-- Alert Notification --}}
-        @if ($errors->any())
-            <div class="alert alert-danger bg-danger bg-opacity-20 text-danger border-danger border-opacity-20 alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
-                    <div>
-                        @foreach ($errors->all() as $error)
-                            <div>{{ $error }}</div>
-                        @endforeach
-                    </div>
-                </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
+    <div class="pos-wrapper p-4"> 
 
         @if(session('success'))
-            <div class="alert alert-success bg-success bg-opacity-20 text-success border-success border-opacity-20 alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-check-circle-fill fs-5 me-2"></i>
-                    <div>{{ session('success') }}</div>
-                </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-success bg-success text-white border-0 alert-dismissible fade show rounded-3 mb-4 shadow" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+                <div>{{ session('success') }}</div>
             </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         @endif
 
+        @if(session('error'))
+        <div class="alert alert-danger bg-danger text-white border-0 alert-dismissible fade show rounded-3 mb-4 shadow" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-x-circle-fill fs-5 me-2"></i>
+                <div>{{ session('error') }}</div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+
+        {{-- Header Banner --}}
         <div class="pos-header-banner p-3 p-md-4 mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
                 <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">
@@ -165,7 +166,7 @@
                 </h3>
                 <span class="text-slate-400 fs-7">Kelola dan proses transaksi penjualan secara cepat & presisi</span>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center flex-wrap gap-2">
                 <span class="badge bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 font-monospace fs-7">
                     ID TR: #{{ str_pad($sale->id, 5, '0', STR_PAD_LEFT) }}
                 </span>
@@ -180,20 +181,21 @@
             {{-- ====================== SEKSI KATALOG PRODUK ============================ --}}
             <div class="col-lg-6">
                 <div class="section-card p-3 h-100 d-flex flex-column">
-                    
+
                     {{-- Pencarian --}}
                     <div class="mb-3">
-                        <form method="GET" action="{{ route('penjualan.create') }}">
+                        <form id="search-form" method="GET" action="{{ route('penjualan.create') }}">
                             <div class="input-group">
                                 <span class="input-group-text bg-slate-900 border-end-0 border-slate-700 text-slate-400">
                                     <i class="bi bi-search"></i>
                                 </span>
                                 <input type="text"
-                                       name="search"
-                                       value="{{ request('search') }}"
-                                       class="form-control form-control-custom border-start-0 ps-0"
-                                       placeholder="Cari nama produk..."
-                                       onkeyup="this.form.submit()">
+                                    id="search-input"
+                                    name="search"
+                                    value="{{ request('search') }}"
+                                    class="form-control form-control-custom border-start-0 ps-0"
+                                    placeholder="Cari nama produk..."
+                                    autocomplete="off">
                             </div>
                         </form>
                     </div>
@@ -210,9 +212,9 @@
                                     {{-- Info Produk --}}
                                     <div class="col-6 col-sm-6 d-flex align-items-center gap-3">
                                         <img src="{{ $product->foto ? asset('storage/'.$product->foto) : 'https://via.placeholder.com/45' }}"
-                                             alt="{{ $product->nama }}"
-                                             class="rounded-circle border border-secondary"
-                                             style="width: 48px; height: 48px; object-fit: cover;">
+                                            alt="{{ $product->nama }}"
+                                            class="rounded-circle border border-secondary"
+                                            style="width: 48px; height: 48px; object-fit: cover;">
                                         <div class="overflow-hidden">
                                             <div class="fw-bold text-white text-truncate">{{ $product->nama }}</div>
                                             <span class="fw-bold text-primary fs-7">
@@ -224,11 +226,11 @@
                                     {{-- Qty Input --}}
                                     <div class="col-3 col-sm-3">
                                         <input type="number"
-                                               name="quantity"
-                                               value="1"
-                                               min="1"
-                                               class="form-control form-control-custom text-center fw-bold"
-                                               {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
+                                            name="quantity"
+                                            value="1"
+                                            min="1"
+                                            class="form-control form-control-custom text-center fw-bold"
+                                            {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
                                     </div>
 
                                     {{-- Submit Button --}}
@@ -285,14 +287,15 @@
                                         </td>
                                         <td>
                                             <form method="POST" action="{{ route('itempenjualan.update', $item->id) }}">
-                                                @csrf @method('PUT')
+                                                @csrf 
+                                                @method('PUT')
                                                 <input type="number"
-                                                       name="quantity"
-                                                       value="{{ $item->kuantitas }}"
-                                                       min="1"
-                                                       class="form-control form-control-sm form-control-custom text-center fw-bold"
-                                                       onchange="this.form.submit()"
-                                                       {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
+                                                    name="quantity"
+                                                    value="{{ $item->kuantitas }}"
+                                                    min="1"
+                                                    class="form-control form-control-sm form-control-custom text-center fw-bold"
+                                                    onchange="this.form.submit()"
+                                                    {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
                                             </form>
                                         </td>
                                         <td class="text-end font-monospace fw-bold text-white">
@@ -300,12 +303,13 @@
                                         </td>
                                         <td class="text-center">
                                             @can('delete', $item)
-                                            <form method="POST" action="{{ route('itempenjualan.destroy', $item->id) }}">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" 
-                                                        class="btn btn-outline-danger btn-sm border-0" 
-                                                        title="Hapus Item"
-                                                        {{ $sale->status === 'COMPLETED' ? 'disabled' : '' }}>
+                                            <form method="POST" action="{{ route('itempenjualan.destroy', $item->id) }}" class="form-delete-item">
+                                                @csrf 
+                                                @method('DELETE')
+                                                <button type="button"
+                                                    class="btn btn-outline-danger btn-sm border-0 btn-delete-item"
+                                                    title="Hapus Item"
+                                                    {{ $sale->status === 'COMPLETED' ? 'disabled' : '' }}>
                                                     <i class="bi bi-trash-fill"></i>
                                                 </button>
                                             </form>
@@ -336,9 +340,9 @@
                         </div>
 
                         {{-- Form Checkout --}}
-                        <form id="checkout-form" 
-                              method="POST" 
-                              action="{{ route('penjualan.update', $sale->id) }}">
+                        <form id="checkout-form"
+                            method="POST"
+                            action="{{ route('penjualan.update', $sale->id) }}">
                             @csrf
                             @method('PUT')
 
@@ -349,40 +353,44 @@
                                     <option value="QRIS">QRIS / NON-TUNAI</option>
                                 </select>
                                 @error('payment_method')
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
                                 @enderror
                             </div>
 
+                            <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary w-100 py-2.5 fw-bold text-uppercase mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-arrow-left-circle-fill"></i> Batal / Kembali ke Daftar
+                            </a>
+
                             @if($sale->status !== 'COMPLETED')
-                                <button type="button" 
-                                        id="btn-checkout" 
-                                        class="btn btn-success w-100 py-2.5 fw-bold text-uppercase mb-2 shadow-sm">
-                                    <i class="bi bi-check-circle-fill me-1"></i> Selesaikan Transaksi (Checkout)
-                                </button>
+                            <button type="button"
+                                id="btn-checkout"
+                                class="btn btn-success w-100 py-2.5 fw-bold text-uppercase mb-2 shadow-sm">
+                                <i class="bi bi-check-circle-fill me-1"></i> Selesaikan Transaksi (Checkout)
+                            </button>
                             @else
-                                <button type="button" class="btn btn-secondary w-100 py-2.5 fw-bold text-uppercase mb-2 shadow-sm" disabled>
-                                    <i class="bi bi-check-circle-fill me-1"></i> Transaksi Selesai
-                                </button>
+                            <button type="button" class="btn btn-secondary w-100 py-2.5 fw-bold text-uppercase mb-2 shadow-sm" disabled>
+                                <i class="bi bi-check-circle-fill me-1"></i> Transaksi Selesai
+                            </button>
                             @endif
                         </form>
 
-                        {{-- Cancel Transaction --}}
+                        {{-- Hapus / Void Entire Transaction --}}
                         @can('delete', $sale)
-                            @if($sale->status !== 'COMPLETED')
-                            <form id="cancel-form"
-                                  action="{{ route('penjualan.destroy', $sale->id) }}"
-                                  method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" 
-                                        id="btn-cancel" 
-                                        class="btn btn-outline-danger w-100 py-2 text-uppercase fw-semibold">
-                                    <i class="bi bi-x-circle me-1"></i> Batal Transaksi
-                                </button>
-                            </form>
-                            @endif
+                        @if($sale->status !== 'COMPLETED')
+                        <form id="cancel-form"
+                            action="{{ route('penjualan.destroy', $sale->id) }}"
+                            method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button"
+                                id="btn-cancel"
+                                class="btn btn-danger w-100 py-2 text-uppercase fw-semibold">
+                                <i class="bi bi-trash me-1"></i> Hapus Transaksi Ini
+                            </button>
+                        </form>
+                        @endif
                         @endcan
                     </div>
                 </div>
@@ -391,18 +399,74 @@
         </div>
     </div>
 </div>
+@endsection
 
+@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const btnCheckout = document.getElementById('btn-checkout');
         const btnCancel = document.getElementById('btn-cancel');
 
+        // Automatic Toast / Alert SweetAlert2 dari Flash Session Laravel
+        @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: "{{ session('success') }}",
+            timer: 3000,
+            showConfirmButton: false
+        });
+        @endif
+
+        @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: "{{ session('error') }}"
+        });
+        @endif
+
+        @if($errors->any())
+        const errorList = @json($errors->all());
+        let errorHtml = '<ul class="text-start mb-0">';
+        errorList.forEach(err => {
+            errorHtml += `<li>${err}</li>`;
+        });
+        errorHtml += '</ul>';
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Periksa Inputan Anda!',
+            html: errorHtml
+        });
+        @endif
+
+        // Search Input Debounce
+        const searchInput = document.getElementById('search-input');
+        const searchForm = document.getElementById('search-form');
+        let searchTimeout;
+
+        if (searchInput && searchForm) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    searchForm.submit();
+                }, 500);
+            });
+            
+            const val = searchInput.value;
+            searchInput.value = '';
+            searchInput.focus();
+            searchInput.value = val;
+        }
+
+        // Konfirmasi Checkout
         if (btnCheckout) {
-            btnCheckout.addEventListener('click', function (e) {
+            btnCheckout.addEventListener('click', function(e) {
                 e.preventDefault();
-                
+
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         title: 'Selesaikan Transaksi?',
@@ -427,20 +491,21 @@
             });
         }
 
+        // Konfirmasi Hapus Transaksi Secara Permanen
         if (btnCancel) {
-            btnCancel.addEventListener('click', function (e) {
+            btnCancel.addEventListener('click', function(e) {
                 e.preventDefault();
 
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
-                        title: 'Batalkan Transaksi?',
-                        text: "Transaksi ini akan dibatalkan dan item keranjang dihapus.",
+                        title: 'Hapus Transaksi?',
+                        text: "Transaksi ini akan dihapus secara permanen beserta seluruh isi keranjang.",
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#ef4444',
                         cancelButtonColor: '#64748b',
-                        confirmButtonText: '<i class="bi bi-trash"></i> Ya, Batalkan!',
-                        cancelButtonText: 'Kembali',
+                        confirmButtonText: '<i class="bi bi-trash"></i> Ya, Hapus!',
+                        cancelButtonText: 'Batal',
                         reverseButtons: true
                     }).then((result) => {
                         if (result.isConfirmed) {
@@ -448,12 +513,43 @@
                         }
                     });
                 } else {
-                    if (confirm('Yakin ingin membatalkan transaksi ini?')) {
+                    if (confirm('Yakin ingin menghapus transaksi ini?')) {
                         document.getElementById('cancel-form').submit();
                     }
                 }
             });
         }
+
+        // Konfirmasi Hapus Item Individu dari Keranjang
+        const deleteItemBtns = document.querySelectorAll('.btn-delete-item');
+        deleteItemBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = this.closest('.form-delete-item');
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Hapus Item?',
+                        text: "Item ini akan dihapus dari keranjang.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Hapus',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                } else {
+                    if (confirm('Hapus item dari keranjang?')) {
+                        form.submit();
+                    }
+                }
+            });
+        });
     });
 </script>
-@endsection
+@endpush
