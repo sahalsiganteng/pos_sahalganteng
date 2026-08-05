@@ -186,37 +186,39 @@
                         <div class="d-flex flex-column gap-2">
                             @forelse($produk as $product)
                             <div class="product-box">
-                                {{-- Tambahkan class "form-add-product" untuk target JS anti-spam --}}
                                 <form method="POST" action="{{ route('itempenjualan.store') }}" class="row g-2 align-items-center m-0 form-add-product">
                                     @csrf
                                     <input type="hidden" name="penjualan_id" value="{{ $sale->id }}">
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
 
                                     {{-- Info Produk --}}
-                                    <div class="col-6 col-sm-6 d-flex align-items-center gap-3">
+                                    <div class="col-5 col-sm-5 d-flex align-items-center gap-3">
                                         <img src="{{ $product->foto ? asset('storage/'.$product->foto) : 'https://via.placeholder.com/45' }}"
                                             alt="{{ $product->nama }}"
                                             class="rounded-circle border border-secondary"
                                             style="width: 48px; height: 48px; object-fit: cover;">
                                         <div class="overflow-hidden">
                                             <div class="fw-bold text-white text-truncate">{{ $product->nama }}</div>
-                                            <span class="fw-bold text-primary fs-7">
+                                            <span class="fw-bold text-primary fs-7 d-block">
                                                 Rp {{ number_format($product->harga_jual, 0, ',', '.') }}
                                             </span>
+                                            <span class="text-secondary fs-8">Stok: {{ $product->stok }}</span>
                                         </div>
                                     </div>
 
-                                    {{-- Qty Input --}}
-                                    <div class="col-3 col-sm-3">
+                                    {{-- Qty Input dengan Batasan Max Stok --}}
+                                    <div class="col-4 col-sm-4">
                                         <input type="number"
                                             name="quantity"
                                             value="1"
                                             min="1"
-                                            class="form-control form-control-custom text-center fw-bold"
+                                            max="{{ $product->stok }}"
+                                            class="form-control form-control-custom text-center fw-bold input-qty-limit"
+                                            data-max-stok="{{ $product->stok }}"
                                             {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
                                     </div>
 
-                                    {{-- Submit Button (Tambahkan ID/Class unik jika diperlukan) --}}
+                                    {{-- Submit Button --}}
                                     <div class="col-3 col-sm-3">
                                         <button type="submit" 
                                             class="btn {{ $product->stok <= 0 ? 'btn-secondary' : 'btn-primary' }} w-100 fw-bold rounded-2 btn-submit-add" 
@@ -256,7 +258,7 @@
                                 <thead>
                                     <tr>
                                         <th class="ps-3">Produk</th>
-                                        <th style="width: 20%;">Qty</th>
+                                        <th style="width: 25%;">Qty</th>
                                         <th class="text-end">Subtotal</th>
                                         <th class="text-center" style="width: 12%;">Aksi</th>
                                     </tr>
@@ -267,7 +269,7 @@
                                         <td class="ps-3">
                                             <div class="fw-bold text-white">{{ $item->produk->nama }}</div>
                                             <small class="text-secondary">
-                                                Rp {{ number_format($item->produk->harga_jual, 0, ',', '.') }}
+                                                Rp {{ number_format($item->produk->harga_jual, 0, ',', '.') }} (Stok: {{ $item->produk->stok }})
                                             </small>
                                         </td>
                                         <td>
@@ -278,7 +280,9 @@
                                                     name="quantity"
                                                     value="{{ $item->kuantitas }}"
                                                     min="1"
-                                                    class="form-control form-control-sm form-control-custom text-center fw-bold"
+                                                    max="{{ $item->produk->stok }}"
+                                                    class="form-control form-control-sm form-control-custom text-center fw-bold input-qty-limit"
+                                                    data-max-stok="{{ $item->produk->stok }}"
                                                     onchange="this.form.submit()"
                                                     {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
                                             </form>
@@ -337,8 +341,9 @@
                                     <option value="CASH" {{ $sale->payment_method === 'CASH' ? 'selected' : '' }}>CASH (TUNAI)</option>
                                     <option value="QRIS" {{ $sale->payment_method === 'QRIS' ? 'selected' : '' }}>QRIS / NON-TUNAI</option>
                                 </select>
+                                
                                 @error('payment_method')
-                                <div class="invalid-feedback">
+                                <div class="invalid-feedback d-block">
                                     {{ $message }}
                                 </div>
                                 @enderror
@@ -445,6 +450,30 @@
             });
         }
 
+        // Validasi Live Input Kuantitas agar Tidak Melebihi Stok
+        const qtyInputs = document.querySelectorAll('.input-qty-limit');
+        qtyInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const maxStok = parseInt(this.dataset.maxStok) || 0;
+                let val = parseInt(this.value);
+
+                if (val > maxStok) {
+                    this.value = maxStok; // Batasi kembali ke maksimal stok
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'warning',
+                        title: `Stok maksimal hanya tersisa ${maxStok}!`,
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                } else if (val < 1 || isNaN(val)) {
+                    // Biarkan kosong dulu saat diketik atau minimal 1
+                }
+            });
+        });
+
         // Search Input Debounce
         const searchInput = document.getElementById('search-input');
         const searchForm = document.getElementById('search-form');
@@ -464,21 +493,15 @@
             searchInput.value = val;
         }
 
-        // ==========================================
-        // PROTEKSI ANTI-SPAM TOMBOL TAMBAH PRODUK
-        // ==========================================
+        // Proteksi Anti-Spam Tombol Tambah Produk
         const addProductForms = document.querySelectorAll('.form-add-product');
         addProductForms.forEach(form => {
             form.addEventListener('submit', function(e) {
                 const submitBtn = this.querySelector('.btn-submit-add');
-                
-                // Jika tombol sudah di-disable, cegah submit ganda
                 if (submitBtn.disabled) {
                     e.preventDefault();
                     return;
                 }
-
-                // Disable tombol dan ubah teks jadi indikator loading
                 submitBtn.disabled = true;
                 const btnTextSpan = submitBtn.querySelector('.btn-text');
                 if(btnTextSpan) {
@@ -491,28 +514,21 @@
         if (btnCheckout) {
             btnCheckout.addEventListener('click', function(e) {
                 e.preventDefault();
-
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: 'Selesaikan Transaksi?',
-                        text: "Pastikan metode pembayaran dan nominal transaksi sudah sesuai.",
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#10b981',
-                        cancelButtonColor: '#64748b',
-                        confirmButtonText: '<i class="bi bi-check-lg"></i> Ya, Checkout!',
-                        cancelButtonText: 'Batal',
-                        reverseButtons: true
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            document.getElementById('checkout-form').submit();
-                        }
-                    });
-                } else {
-                    if (confirm('Yakin ingin memproses checkout transaksi ini?')) {
+                Swal.fire({
+                    title: 'Selesaikan Transaksi?',
+                    text: "Pastikan metode pembayaran dan nominal transaksi sudah sesuai.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="bi bi-check-lg"></i> Ya, Checkout!',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         document.getElementById('checkout-form').submit();
                     }
-                }
+                });
             });
         }
 
@@ -520,28 +536,21 @@
         if (btnCancel) {
             btnCancel.addEventListener('click', function(e) {
                 e.preventDefault();
-
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: 'Hapus Transaksi?',
-                        text: "Transaksi ini akan dihapus secara permanen beserta seluruh isi keranjang.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ef4444',
-                        cancelButtonColor: '#64748b',
-                        confirmButtonText: '<i class="bi bi-trash"></i> Ya, Hapus!',
-                        cancelButtonText: 'Batal',
-                        reverseButtons: true
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            document.getElementById('cancel-form').submit();
-                        }
-                    });
-                } else {
-                    if (confirm('Yakin ingin menghapus transaksi ini?')) {
+                Swal.fire({
+                    title: 'Hapus Transaksi?',
+                    text: "Transaksi ini akan dihapus secara permanen beserta seluruh isi keranjang.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="bi bi-trash"></i> Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         document.getElementById('cancel-form').submit();
                     }
-                }
+                });
             });
         }
 
@@ -551,28 +560,21 @@
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 const form = this.closest('.form-delete-item');
-
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: 'Hapus Item?',
-                        text: "Item ini akan dihapus dari keranjang.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ef4444',
-                        cancelButtonColor: '#64748b',
-                        confirmButtonText: 'Hapus',
-                        cancelButtonText: 'Batal',
-                        reverseButtons: true
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                } else {
-                    if (confirm('Hapus item dari keranjang?')) {
+                Swal.fire({
+                    title: 'Hapus Item?',
+                    text: "Item ini akan dihapus dari keranjang.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Hapus',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         form.submit();
                     }
-                }
+                });
             });
         });
     });
