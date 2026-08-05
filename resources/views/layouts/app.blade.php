@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title')</title>
     
-    <!-- Vite & Fonts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -56,6 +57,35 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(13, 110, 253, .35);
         }
+
+        /* Custom SweetAlert2 Dark Mode Styling */
+        .dark-theme-popup {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px !important;
+        }
+        .dark-theme-popup .swal2-title {
+            color: #ffffff !important;
+        }
+        .dark-theme-popup .swal2-html-container {
+            color: #94a3b8 !important;
+        }
+        .swal2-confirm-btn {
+            background: #ef4444 !important;
+            color: #ffffff !important;
+            border-radius: 8px !important;
+            padding: 8px 18px !important;
+            margin-left: 8px !important;
+            border: none !important;
+        }
+        .swal2-cancel-btn {
+            background: #334155 !important;
+            color: #cbd5e1 !important;
+            border-radius: 8px !important;
+            padding: 8px 18px !important;
+            border: none !important;
+        }
     </style>
 </head>
 <body class="@yield('body-class')">
@@ -77,8 +107,9 @@
         @endif
     </div>
 
-    <!-- Isi konten halaman -->
     @yield('content')
+
+    @stack('scripts')
 
 </body>
 </html>

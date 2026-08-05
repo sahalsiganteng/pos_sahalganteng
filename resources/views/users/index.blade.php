@@ -8,7 +8,6 @@
 
 <div class="container py-4">
 
-    <!-- Header Section -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">
@@ -25,11 +24,9 @@
         </a>
     </div>
 
-    <!-- Glassmorphic Card Container -->
     <div class="card glass-card border-0 shadow-lg rounded-4">
         <div class="card-body p-4">
 
-            <!-- Filter & Search Section -->
             <form action="{{ route('admin.users') }}" method="GET" class="mb-4">
                 <div class="row g-2 justify-content-end">
                     <div class="col-12 col-md-5 col-lg-4">
@@ -51,7 +48,6 @@
                 </div>
             </form>
 
-            <!-- Table Section -->
             <div class="table-responsive">
                 <table class="table table-dark-custom align-middle mb-0">
                     <thead>
@@ -106,19 +102,19 @@
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
 
-                                    <form action="{{ route('admin.users.destroy', $user) }}" 
+                                    <button type="button" 
+                                            class="btn btn-action-delete btn-sm rounded-2" 
+                                            onclick="confirmDeleteUser('delete-user-form-{{ $user->id }}')" 
+                                            title="Hapus">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+
+                                    <form id="delete-user-form-{{ $user->id }}" 
+                                          action="{{ route('admin.users.destroy', $user) }}" 
                                           method="POST" 
-                                          class="d-inline">
+                                          class="d-none">
                                         @csrf
                                         @method('DELETE')
-
-                                        <button 
-                                            type="submit"
-                                            class="btn btn-action-delete btn-sm rounded-2" 
-                                            onclick="return confirm('Yakin ingin menghapus user ini?')"
-                                            title="Hapus">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
                                     </form>
                                 </div>
                             </td>
@@ -135,7 +131,6 @@
                 </table>
             </div>
 
-            <!-- Pagination & Info -->
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top border-secondary border-opacity-25 gap-2">
                 <div class="small text-secondary">
                     Menampilkan <strong class="text-white">{{ $users->firstItem() ?? 0 }}</strong> - <strong class="text-white">{{ $users->lastItem() ?? 0 }}</strong> dari <strong class="text-white">{{ $users->total() }}</strong> users
@@ -150,7 +145,6 @@
 
 </div>
 
-<!-- Custom Dark Styling untuk Halaman Users -->
 <style>
     .glass-card {
         background: rgba(30, 41, 59, 0.75) !important;
@@ -243,5 +237,31 @@
         border-color: #6366f1 !important;
     }
 </style>
+
+@push('scripts')
+<script>
+    function confirmDeleteUser(formId) {
+        Swal.fire({
+            title: 'Hapus User ini?',
+            text: 'Apakah kamu yakin ingin menghapus user ini dari sistem? Tindakan ini tidak dapat dibatalkan.',
+            icon: 'warning',
+            iconColor: '#ef4444',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus User',
+            cancelButtonText: 'Batal',
+            customClass: {
+                popup: 'dark-theme-popup',
+                confirmButton: 'swal2-confirm-btn',
+                cancelButton: 'swal2-cancel-btn'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(formId).submit();
+            }
+        });
+    }
+</script>
+@endpush
 
 @endsection

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Penjualan')
+@section('title', 'Rekap Penjualan')
 
 @section('content')
 
@@ -8,18 +8,6 @@
 
 <div class="container py-4">
 
-    {{-- Alert Notification --}}
-    @if(session('errors'))
-    <div class="alert glass-alert-danger border-0 text-white alert-dismissible fade show rounded-4 mb-4" role="alert">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-shield-slash-fill fs-4 me-2 text-danger"></i>
-            <div>{{ session('errors') }}</div>
-        </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
-
-    <!-- Header Page -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">
@@ -36,7 +24,6 @@
         </a>
     </div>
 
-    <!-- Filter & Search Card -->
     <div class="card glass-card border-0 shadow-lg rounded-4 mb-4">
         <div class="card-body p-3">
             <form action="{{ route('penjualan.index') }}" method="GET">
@@ -68,7 +55,6 @@
         </div>
     </div>
 
-    <!-- Data Table Card -->
     <div class="card glass-card border-0 shadow-lg rounded-4">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -99,7 +85,6 @@
                                 </span>
                             </td>
 
-                            <!-- Kasir / Operator -->
                             <td>
                                 <span class="badge badge-pj px-3 py-1.5 rounded-pill">
                                     <i class="bi bi-person-badge me-1"></i>
@@ -107,21 +92,18 @@
                                 </span>
                             </td>
 
-                            <!-- Total Bayar -->
                             <td>
                                 <span class="fw-bold text-emerald fs-6">
                                     Rp {{ number_format($sale->total_pembayaran ?? $sale->total_harga ?? 0, 0, ',', '.') }}
                                 </span>
                             </td>
 
-                            <!-- Metode -->
                             <td>
                                 <span class="badge badge-method px-2.5 py-1 rounded-3">
                                     <i class="bi bi-credit-card me-1 text-primary"></i>{{ strtoupper($sale->metode_pembayaran ?? $sale->metode ?? 'CASH') }}
                                 </span>
                             </td>
 
-                            <!-- Status -->
                             <td class="text-center">
                                 @php 
                                     $st = strtoupper($sale->status ?? ''); 
@@ -142,34 +124,31 @@
                                 @endif
                             </td>
 
-                            <!-- Aksi -->
                             <td class="text-end pe-4">
-                                <div class="d-inline-flex gap-2">
+                                <div class="d-inline-flex gap-2 position-relative" style="z-index: 10;">
                                     <a href="{{ route('penjualan.show', $sale) }}" 
                                        class="btn btn-action-view btn-sm rounded-2" 
                                        title="Lihat Detail">
                                         <i class="bi bi-eye"></i>
                                     </a>
 
-                                    @can('view', $sale)
                                     <a href="{{ route('penjualan.edit', $sale) }}" 
                                        class="btn btn-action-edit btn-sm rounded-2" 
                                        title="Ubah Log">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    @endcan
 
-                                    @can('delete', $sale)
-                                    <form action="{{ route('penjualan.destroy', $sale) }}" method="POST" class="d-inline">
+                                    <button type="button" 
+                                            class="btn btn-action-delete btn-sm rounded-2" 
+                                            onclick="confirmDelete('delete-form-{{ $sale->id }}')" 
+                                            title="Hapus Log">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+
+                                    <form id="delete-form-{{ $sale->id }}" action="{{ route('penjualan.destroy', $sale) }}" method="POST" class="d-none">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-action-delete btn-sm rounded-2" 
-                                                onclick="return confirm('Hapus permanen log transaksi ini?')"
-                                                title="Hapus Log">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
                                     </form>
-                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -189,7 +168,6 @@
             </div>
         </div>
 
-        <!-- Pagination Section -->
         @if($sales->hasPages())
         <div class="card-footer bg-transparent border-top border-secondary border-opacity-25 py-3">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
@@ -205,19 +183,12 @@
     </div>
 </div>
 
-<!-- Custom Dark Styling (Glassmorphism Tema Utama) -->
 <style>
     .glass-card {
         background: rgba(30, 41, 59, 0.75) !important;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    }
-
-    .glass-alert-danger {
-        background: rgba(239, 68, 68, 0.2) !important;
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(239, 68, 68, 0.3) !important;
     }
 
     .btn-neon-primary {
@@ -274,7 +245,6 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Status Badges */
     .badge-stock-warning {
         background: rgba(245, 158, 11, 0.2) !important;
         color: #fbbf24 !important;
@@ -287,7 +257,12 @@
         border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
-    /* Action Buttons */
+    .btn-action-view, .btn-action-edit, .btn-action-delete {
+        position: relative;
+        z-index: 15;
+        cursor: pointer !important;
+    }
+
     .btn-action-view {
         background: rgba(56, 189, 248, 0.15);
         color: #38bdf8;
@@ -330,5 +305,37 @@
         font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
 </style>
+
+@push('scripts')
+<script>
+    function confirmDelete(formId) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Hapus Log Transaksi?',
+                text: 'Apakah kamu yakin ingin menghapus permanen log transaksi ini?',
+                icon: 'warning',
+                iconColor: '#ef4444',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus Log',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    popup: 'dark-theme-popup',
+                    confirmButton: 'swal2-confirm-btn',
+                    cancelButton: 'swal2-cancel-btn'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        } else {
+            if (confirm('Apakah kamu yakin ingin menghapus log transaksi ini?')) {
+                document.getElementById(formId).submit();
+            }
+        }
+    }
+</script>
+@endpush
 
 @endsection

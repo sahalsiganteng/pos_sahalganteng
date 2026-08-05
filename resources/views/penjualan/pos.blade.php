@@ -3,7 +3,6 @@
 @section('title', 'POS - Kasir Modern')
 
 @push('styles')
-<!-- SweetAlert2 Dark Theme CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@5/dark.css">
 
 <style>
@@ -132,7 +131,6 @@
 @section('content')
 <div class="container-fluid px-4 py-4">
     
-    <!-- Wrapper Utama Bertema Dark Modern -->
     <div class="pos-wrapper p-4">
 
         {{-- Alert Notification --}}
@@ -160,7 +158,6 @@
             </div>
         @endif
 
-        <!-- Banner Header POS -->
         <div class="pos-header-banner p-3 p-md-4 mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
                 <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">
@@ -395,7 +392,6 @@
     </div>
 </div>
 
-<!-- Load Script SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>

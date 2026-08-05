@@ -41,7 +41,7 @@
                         <!-- Form Actions -->
                         <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top border-secondary border-opacity-25">
                             <a href="{{ route('produk.index') }}" class="btn btn-outline-secondary text-secondary border-secondary px-4 py-2 rounded-3">
-                                Batal
+                                Kembali
                             </a>
                             <button type="submit" class="btn btn-neon-warning px-4 py-2 rounded-3 shadow-sm d-flex align-items-center gap-2">
                                 <i class="bi bi-check-circle"></i>

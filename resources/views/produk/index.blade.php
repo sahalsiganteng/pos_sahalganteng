@@ -6,9 +6,11 @@
 
 @include('layouts.navbar')
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@5/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="container py-4">
 
-    <!-- Header Page -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">
@@ -27,7 +29,6 @@
         @endcan
     </div>
 
-    <!-- Filter & Search Card -->
     <div class="card glass-card border-0 shadow-lg rounded-4 mb-4">
         <div class="card-body p-3">
             <form action="{{ route('produk.index') }}" method="GET">
@@ -59,13 +60,11 @@
         </div>
     </div>
 
-    <!-- Grid Card Produk -->
     <div class="row g-4">
         @forelse ($products as $product)
         <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
             <div class="card glass-card h-100 border-0 rounded-4 overflow-hidden product-card transition-all">
                 
-                <!-- Foto & Badge Stok -->
                 <div class="position-relative product-img-container">
                     @if($product->foto)
                         <img src="{{ asset('storage/'.$product->foto) }}" 
@@ -77,7 +76,6 @@
                         </div>
                     @endif
 
-                    <!-- Badge Stok di atas Gambar -->
                     <div class="position-absolute top-0 end-0 m-3">
                         @if($product->stok <= 0)
                             <span class="badge badge-stock-danger px-3 py-1.5 rounded-pill shadow-sm">Habis</span>
@@ -89,22 +87,18 @@
                     </div>
                 </div>
 
-                <!-- Detail Produk -->
                 <div class="card-body p-4 d-flex flex-column justify-content-between">
                     <div>
-                        <!-- Penanggung Jawab -->
                         <div class="mb-2">
                             <span class="badge badge-pj px-2.5 py-1 rounded-pill">
                                 <i class="bi bi-person me-1"></i>{{ $product->user->name ?? 'System' }}
                             </span>
                         </div>
 
-                        <!-- Nama Produk -->
                         <h5 class="fw-bold text-white mb-3 text-truncate" title="{{ $product->nama }}">
                             {{ $product->nama }}
                         </h5>
 
-                        <!-- Pricing Section -->
                         <div class="price-box p-3 rounded-3 mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="text-secondary small">Harga Beli:</span>
@@ -121,7 +115,6 @@
                         </div>
                     </div>
 
-                    <!-- Tombol Aksi Card -->
                     <div class="pt-2 border-top border-secondary border-opacity-25 d-flex gap-2">
                         <a href="{{ route('produk.show', $product) }}" 
                            class="btn btn-action-view btn-sm w-100 rounded-3 py-2 d-flex align-items-center justify-content-center gap-1" 
@@ -139,11 +132,11 @@
                         @endcan
 
                         @can('delete', $product)
-                        <form action="{{ route('produk.destroy', $product) }}" method="POST" class="d-inline">
+                        <form action="{{ route('produk.destroy', $product) }}" method="POST" class="d-inline form-delete">
                             @csrf
                             @method('DELETE')
-                            <button class="btn btn-action-delete btn-sm rounded-3 px-3 py-2" 
-                                    onclick="return confirm('Apakah anda yakin akan menghapus produk ini?')"
+                            <button type="submit" 
+                                    class="btn btn-action-delete btn-sm rounded-3 px-3 py-2" 
                                     title="Hapus">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -167,7 +160,6 @@
         @endforelse
     </div>
 
-    <!-- Pagination Section -->
     @if($products->hasPages())
     <div class="card glass-card border-0 rounded-4 mt-4 p-3">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
@@ -183,7 +175,6 @@
 
 </div>
 
-<!-- Custom Dark Styling untuk Card View -->
 <style>
     .glass-card {
         background: rgba(30, 41, 59, 0.75) !important;
@@ -310,6 +301,56 @@
         box-shadow: none;
         border-color: #6366f1 !important;
     }
+
+    /* Style Merah SweetAlert2 */
+    .swal-red-popup {
+        border: 1px solid rgba(220, 38, 38, 0.5) !important;
+        box-shadow: 0 10px 25px rgba(220, 38, 38, 0.2) !important;
+    }
+
+    .swal-red-btn {
+        background-color: #dc2626 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4) !important;
+    }
+
+    .swal-red-btn:hover {
+        background-color: #b91c1c !important;
+    }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteForms = document.querySelectorAll('.form-delete');
+
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Hapus Produk?',
+                    text: "Data produk yang dihapus tidak dapat dikembalikan!",
+                    icon: 'warning',
+                    iconColor: '#ef4444',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-trash me-1"></i> Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#4b5563',
+                    background: '#1e293b',
+                    color: '#ffffff',
+                    customClass: {
+                        popup: 'swal-red-popup rounded-4',
+                        confirmButton: 'swal-red-btn btn px-4 py-2 rounded-3'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
 
 @endsection

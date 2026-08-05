@@ -1,22 +1,62 @@
 @extends('layouts.app')
 
-@section('title','Detail Produk')
+@section('title', 'Detail Produk')
 
 @section('content')
 
 @include('layouts.navbar')
 
-<h1>Halaman Detail Produk</h1>
+<div class="container py-4">
+    <h2 class="fw-bold mb-4 text-white">Halaman Detail Produk</h2>
 
-<div class="card" style="width: 18rem;">
-  <img src="{{ asset('storage/' . $produk->foto) }}" class="card-img-top" alt="...">
-  <div class="card-body">
-    <h5 class="card-title"> Nama Produk  :{{ $produk->nama}}</h5>
-    <p class="card-text">   Harga dasar  :{{ $produk->harga_beli}}</p>
-    <p class="card-text">   Harga jual   :{{ $produk->harga_jual}}</p>
-    <p class="card-text">   Stok         :{{ $produk->stok}}</p>
-    <p class="card-text">  Nama Pengimput  :{{ $produk->user->name}}</p>
-    <a href="{{ route('produk.index') }}" class="btn btn-primary">Kembali</a>
-  </div>
+    <div class="card bg-dark text-white border-secondary shadow-lg rounded-4 overflow-hidden">
+        <div class="card-body p-4 p-md-5">
+            <div class="row g-4 align-items-center">
+                
+                <div class="col-12 col-md-5 text-center">
+                    <div class="p-4 bg-secondary bg-opacity-10 rounded-4 border border-secondary border-opacity-25 d-flex align-items-center justify-content-center" style="min-height: 350px;">
+                        <img src="{{ asset('storage/' . $produk->foto) }}" 
+                             class="img-fluid rounded" 
+                             style="max-height: 320px; object-fit: contain;" 
+                             alt="{{ $produk->nama }}">
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-7 d-flex flex-column justify-content-between">
+                    <div>
+                        <h2 class="fw-bold text-white mb-4 text-capitalize display-6">{{ $produk->nama }}</h2>
+                        
+                        <hr class="border-secondary opacity-50 mb-4">
+
+                        <div class="row gy-3 mb-4">
+                            <div class="col-sm-4 text-white-50 fs-5">Harga Dasar</div>
+                            <div class="col-sm-8 text-light fw-semibold fs-5">Rp {{ number_format($produk->harga_beli, 0, ',', '.') }}</div>
+
+                            <div class="col-sm-4 text-white-50 fs-5">Harga Jual</div>
+                            <div class="col-sm-8 text-success fw-bold fs-4">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</div>
+
+                            <div class="col-sm-4 text-white-50 fs-5 d-flex align-items-center">Stok</div>
+                            <div class="col-sm-8">
+                                <span class="badge bg-info text-dark px-3 py-2 fs-6 rounded-pill">{{ $produk->stok }} unit</span>
+                            </div>
+
+                            <div class="col-sm-4 text-white-50 fs-5 d-flex align-items-center">Penginput</div>
+                            <div class="col-sm-8">
+                                <span class="badge bg-secondary bg-opacity-50 text-light border border-secondary px-3 py-2 fs-6">{{ $produk->user->name }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top border-secondary opacity-75">
+                        <a href="{{ route('produk.index') }}" class="btn btn-primary btn-lg fw-semibold rounded-3 px-4">
+                            &larr; Kembali
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
+
 @endsection
