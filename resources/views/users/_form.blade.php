@@ -53,6 +53,3 @@
 </div>
 @enderror
 </div>
-
-<button class="btn btn-success">Simpan</button>
-<a href="{{ route('admin.users') }}" class="btn btn-secondary">Kembali</a>

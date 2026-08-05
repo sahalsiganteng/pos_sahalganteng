@@ -29,6 +29,7 @@
             <!-- Form Card -->
             <div class="card glass-card border-0 shadow-lg rounded-4">
                 <div class="card-body p-4 p-md-5">
+                    <!-- FIX 1: Action diarahkan ke produk.store dan tanpa @method('PUT') -->
                     <form action="{{ route('produk.store') }}" 
                           method="POST" 
                           enctype="multipart/form-data">
@@ -42,6 +43,7 @@
                             <a href="{{ route('produk.index') }}" class="btn btn-outline-secondary text-secondary border-secondary px-4 py-2 rounded-3">
                                 Batal
                             </a>
+                            <!-- FIX 2: Tombol disesuaikan untuk Simpan Produk Baru -->
                             <button type="submit" class="btn btn-neon-primary px-4 py-2 rounded-3 shadow-sm d-flex align-items-center gap-2">
                                 <i class="bi bi-plus-circle"></i>
                                 <span>Simpan Produk</span>

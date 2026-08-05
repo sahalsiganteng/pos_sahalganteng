@@ -93,22 +93,22 @@ class ProdukController extends Controller
      */
     public function update(UpdateRequest $request, Produk $produk)
     {
-           $this->authorize('update', $produk);
+        $this->authorize('update', $produk);
 
-          $dataReq = $request->validated();
+        $dataReq = $request->validated();
 
         $data = [
-        'user_id'   => Auth::id(),        
-        'nama'      => $dataReq['name'],      
-        'harga_beli'=> $dataReq['purchase_price'],        
-        'harga_jual'=> $dataReq['selling_price'],       
-        'stok'      => $dataReq['stock'],       
+            'user_id'    => Auth::id(),        
+            'nama'       => $dataReq['name'],      
+            'harga_beli' => $dataReq['purchase_price'],        
+            'harga_jual' => $dataReq['selling_price'],       
+            'stok'       => $dataReq['stock'],       
         ];  
 
         //jika upload foto baru
         if ($request->hasFile('foto')) {
 
-              // hapus foto lama (jika ad & memang tersimpan)
+            // hapus foto lama (jika ad & memang tersimpan)
             if (
                 $produk->foto &&
                 Storage::disk('public')->exists($produk->foto)
@@ -121,31 +121,32 @@ class ProdukController extends Controller
 
         $produk->update($data);
 
-        return redirect()->route('produk.edit', $produk->id)->with('success', 'Product created successfully.');
+        // FIXED: Redirect langsung ke halaman daftar produk (produk.index)
+        return redirect()->route('produk.index')->with('success', 'Product updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-   public function destroy(Produk $produk)
-{
-    $this->authorize('delete', $produk);
+    public function destroy(Produk $produk)
+    {
+        $this->authorize('delete', $produk);
 
-    // Cek apakah produk sudah dipakai dalam transaksi penjualan
-    if ($produk->itemPenjualan()->exists()) {
+        // Cek apakah produk sudah dipakai dalam transaksi penjualan
+        if ($produk->itemPenjualan()->exists()) {
+            return redirect()->route('produk.index')
+                ->with('error', 'Produk tidak bisa dihapus karena sudah digunakan dalam transaksi.');
+        }
+
+        // Hapus foto produk jika ada
+        if ($produk->foto) {
+            Storage::disk('public')->delete($produk->foto);
+        }
+
+        // Hapus produk
+        $produk->delete();
+
         return redirect()->route('produk.index')
-            ->with('error', 'Produk tidak bisa dihapus karena sudah digunakan dalam transaksi.');
-    }
-
-    // Hapus foto produk jika ada
-    if ($produk->foto) {
-        Storage::disk('public')->delete($produk->foto);
-    }
-
-    // Hapus produk
-    $produk->delete();
-
-    return redirect()->route('produk.index')
-        ->with('success', 'Product deleted successfully.');
+            ->with('success', 'Product deleted successfully.');
     }
 }
