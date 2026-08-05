@@ -23,12 +23,17 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [Usercontroller::class, 'index'])->name('users');
         Route::get('/users/create', [Usercontroller::class, 'create'])->name('users.create');
-        
-        // FIXED: Changed '/users/store' to '/users' so POST /admin/users works
         Route::post('/users', [Usercontroller::class, 'store'])->name('users.store');
         
         Route::get('/users/edit/{user}', [Usercontroller::class, 'edit'])->name('users.edit');
-        Route::post('/users/update/{user}', [Usercontroller::class, 'update'])->name('users.update');
+        
+        /* 
+         * PERBAIKAN DI SINI:
+         * URL diubah dari '/users/update/{user}' menjadi '/users/{user}'
+         * Supaya cocok dengan form action di view: url('/admin/users/' . $user->id)
+         */
+        Route::put('/users/{user}', [Usercontroller::class, 'update'])->name('users.update');
+        
         Route::delete('/users/{user}', [Usercontroller::class, 'destroy'])->name('users.destroy');
     });
 
@@ -36,6 +41,12 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin,kasir')->group(function () {
         Route::resource('/produk', ProdukController::class);
         Route::resource('/penjualan', PenjualanController::class);
+        
+        // Rute tambahan POS (Sesuai panggilan di view pos.blade.php)
+        Route::post('/penjualan/{penjualan}/add-item', [ItemPenjualanController::class, 'store'])->name('penjualan.add-item');
+        Route::patch('/penjualan/{penjualan}/update-item/{itempenjualan}', [ItemPenjualanController::class, 'update'])->name('penjualan.update-item');
+        Route::delete('/penjualan/{penjualan}/remove-item/{itempenjualan}', [ItemPenjualanController::class, 'destroy'])->name('penjualan.remove-item');
+
         Route::resource('/itempenjualan', ItemPenjualanController::class);
         Route::get('/admin/penjualan/{penjualan}', [PenjualanController::class, 'show'])
             ->name('admin.penjualan.show');

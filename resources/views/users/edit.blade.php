@@ -20,7 +20,7 @@
                         Ubah data pengguna <strong class="text-white">{{ $user->name ?? $user->username ?? '' }}</strong>.
                     </p>
                 </div>
-                <a href="{{ url('/admin/users') }}" class="btn btn-outline-secondary text-secondary border-secondary rounded-3 d-flex align-items-center gap-2">
+                <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary text-secondary border-secondary rounded-3 d-flex align-items-center gap-2">
                     <i class="bi bi-arrow-left"></i>
                     <span>Kembali</span>
                 </a>
@@ -29,7 +29,9 @@
             <!-- Form Card -->
             <div class="card glass-card border-0 shadow-lg rounded-4">
                 <div class="card-body p-4 p-md-5">
-                    <form action="{{ url('/admin/users/' . $user->id) }}" method="POST">
+                    
+                    {{-- EDIT DI SINI: Menggunakan route named 'admin.users.update' --}}
+                    <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                         @csrf
                         @method('PUT')
                         
@@ -38,7 +40,7 @@
 
                         <!-- Form Actions -->
                         <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top border-secondary border-opacity-25">
-                            <a href="{{ url('/admin/users') }}" class="btn btn-outline-secondary text-secondary border-secondary px-4 py-2 rounded-3">
+                            <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary text-secondary border-secondary px-4 py-2 rounded-3">
                                 Batal
                             </a>
                             <button type="submit" class="btn btn-neon-warning px-4 py-2 rounded-3 shadow-sm d-flex align-items-center gap-2">
@@ -47,6 +49,7 @@
                             </button>
                         </div>
                     </form>
+
                 </div>
             </div>
 

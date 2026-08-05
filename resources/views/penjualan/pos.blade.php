@@ -138,26 +138,6 @@
 
     <div class="pos-wrapper p-4"> 
 
-        @if(session('success'))
-        <div class="alert alert-success bg-success text-white border-0 alert-dismissible fade show rounded-3 mb-4 shadow" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-check-circle-fill fs-5 me-2"></i>
-                <div>{{ session('success') }}</div>
-            </div>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        @endif
-
-        @if(session('error'))
-        <div class="alert alert-danger bg-danger text-white border-0 alert-dismissible fade show rounded-3 mb-4 shadow" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-x-circle-fill fs-5 me-2"></i>
-                <div>{{ session('error') }}</div>
-            </div>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        @endif
-
         {{-- Header Banner --}}
         <div class="pos-header-banner p-3 p-md-4 mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
@@ -167,7 +147,7 @@
                 <span class="text-slate-400 fs-7">Kelola dan proses transaksi penjualan secara cepat & presisi</span>
             </div>
             <div class="d-flex align-items-center flex-wrap gap-2">
-                <span class="badge bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 font-monospace fs-7">
+                <span class="badge bg-dark text-light border border-secondary px-3 py-2 font-monospace fs-7">
                     ID TR: #{{ str_pad($sale->id, 5, '0', STR_PAD_LEFT) }}
                 </span>
                 <span class="badge {{ $sale->status === 'COMPLETED' ? 'bg-success text-white' : 'bg-warning text-dark' }} px-3 py-2 font-monospace fs-7 fw-bold">
@@ -185,8 +165,9 @@
                     {{-- Pencarian --}}
                     <div class="mb-3">
                         <form id="search-form" method="GET" action="{{ route('penjualan.create') }}">
+                            <input type="hidden" name="sale_id" value="{{ $sale->id }}">
                             <div class="input-group">
-                                <span class="input-group-text bg-slate-900 border-end-0 border-slate-700 text-slate-400">
+                                <span class="input-group-text bg-dark border-end-0 border-secondary text-secondary">
                                     <i class="bi bi-search"></i>
                                 </span>
                                 <input type="text"
@@ -200,13 +181,15 @@
                         </form>
                     </div>
 
-                    {{-- Lista Produk --}}
+                    {{-- List Produk --}}
                     <div class="custom-scroll pe-1 flex-grow-1" style="max-height: 60vh; overflow-y: auto;">
                         <div class="d-flex flex-column gap-2">
-                            @forelse($products as $product)
+                            @forelse($produk as $product)
                             <div class="product-box">
-                                <form method="POST" action="{{ route('itempenjualan.store') }}" class="row g-2 align-items-center m-0">
+                                {{-- Tambahkan class "form-add-product" untuk target JS anti-spam --}}
+                                <form method="POST" action="{{ route('itempenjualan.store') }}" class="row g-2 align-items-center m-0 form-add-product">
                                     @csrf
+                                    <input type="hidden" name="penjualan_id" value="{{ $sale->id }}">
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
 
                                     {{-- Info Produk --}}
@@ -233,17 +216,19 @@
                                             {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
                                     </div>
 
-                                    {{-- Submit Button --}}
+                                    {{-- Submit Button (Tambahkan ID/Class unik jika diperlukan) --}}
                                     <div class="col-3 col-sm-3">
-                                        <button type="submit" class="btn btn-primary w-100 fw-bold rounded-2" {{ $sale->status === 'COMPLETED' ? 'disabled' : '' }}>
-                                            <i class="bi bi-plus-lg me-1"></i> Tambah
+                                        <button type="submit" 
+                                            class="btn {{ $product->stok <= 0 ? 'btn-secondary' : 'btn-primary' }} w-100 fw-bold rounded-2 btn-submit-add" 
+                                            {{ ($sale->status === 'COMPLETED' || $product->stok <= 0) ? 'disabled' : '' }}>
+                                            <i class="bi bi-plus-lg me-1"></i> <span class="btn-text">{{ $product->stok <= 0 ? 'Habis' : 'Tambah' }}</span>
                                         </button>
                                     </div>
                                 </form>
                             </div>
                             @empty
-                            <div class="text-center py-5 text-slate-400">
-                                <i class="bi bi-box-seam fs-1 d-block mb-2 text-slate-500"></i>
+                            <div class="text-center py-5 text-secondary">
+                                <i class="bi bi-box-seam fs-1 d-block mb-2 text-secondary"></i>
                                 Produk tidak ditemukan
                             </div>
                             @endforelse
@@ -266,7 +251,7 @@
                         </div>
 
                         {{-- Tabel Keranjang --}}
-                        <div class="table-responsive rounded-3 border border-slate-700 custom-scroll mb-3" style="max-height: 38vh; overflow-y: auto;">
+                        <div class="table-responsive rounded-3 border border-secondary custom-scroll mb-3" style="max-height: 38vh; overflow-y: auto;">
                             <table class="table table-cart align-middle mb-0">
                                 <thead>
                                     <tr>
@@ -281,7 +266,7 @@
                                     <tr>
                                         <td class="ps-3">
                                             <div class="fw-bold text-white">{{ $item->produk->nama }}</div>
-                                            <small class="text-slate-400">
+                                            <small class="text-secondary">
                                                 Rp {{ number_format($item->produk->harga_jual, 0, ',', '.') }}
                                             </small>
                                         </td>
@@ -318,8 +303,8 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="text-center py-5 text-slate-400">
-                                            <i class="bi bi-cart-x fs-1 d-block mb-2 text-slate-500"></i>
+                                        <td colspan="4" class="text-center py-5 text-secondary">
+                                            <i class="bi bi-cart-x fs-1 d-block mb-2 text-secondary"></i>
                                             Keranjang belanja masih kosong
                                         </td>
                                     </tr>
@@ -349,8 +334,8 @@
                             <div class="mb-3">
                                 <select name="payment_method" class="form-select form-control-custom fw-semibold @error('payment_method') is-invalid @enderror" {{ $sale->status === 'COMPLETED' ? 'disabled' : '' }}>
                                     <option value="">-- Pilih Metode Pembayaran --</option>
-                                    <option value="CASH">CASH (TUNAI)</option>
-                                    <option value="QRIS">QRIS / NON-TUNAI</option>
+                                    <option value="CASH" {{ $sale->payment_method === 'CASH' ? 'selected' : '' }}>CASH (TUNAI)</option>
+                                    <option value="QRIS" {{ $sale->payment_method === 'QRIS' ? 'selected' : '' }}>QRIS / NON-TUNAI</option>
                                 </select>
                                 @error('payment_method')
                                 <div class="invalid-feedback">
@@ -359,24 +344,24 @@
                                 @enderror
                             </div>
 
-                            <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary w-100 py-2.5 fw-bold text-uppercase mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                            <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary w-100 py-2 fw-bold text-uppercase mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
                                 <i class="bi bi-arrow-left-circle-fill"></i> Batal / Kembali ke Daftar
                             </a>
 
                             @if($sale->status !== 'COMPLETED')
                             <button type="button"
                                 id="btn-checkout"
-                                class="btn btn-success w-100 py-2.5 fw-bold text-uppercase mb-2 shadow-sm">
+                                class="btn btn-success w-100 py-2 fw-bold text-uppercase mb-2 shadow-sm">
                                 <i class="bi bi-check-circle-fill me-1"></i> Selesaikan Transaksi (Checkout)
                             </button>
                             @else
-                            <button type="button" class="btn btn-secondary w-100 py-2.5 fw-bold text-uppercase mb-2 shadow-sm" disabled>
+                            <button type="button" class="btn btn-secondary w-100 py-2 fw-bold text-uppercase mb-2 shadow-sm" disabled>
                                 <i class="bi bi-check-circle-fill me-1"></i> Transaksi Selesai
                             </button>
                             @endif
                         </form>
 
-                        {{-- Hapus / Void Entire Transaction --}}
+                        {{-- Hapus / Void Transaksi --}}
                         @can('delete', $sale)
                         @if($sale->status !== 'COMPLETED')
                         <form id="cancel-form"
@@ -399,6 +384,13 @@
         </div>
     </div>
 </div>
+
+{{-- Elemen Data Flash untuk JS --}}
+<div id="flash-data" 
+    data-success="{{ session('success') }}" 
+    data-error="{{ session('error') }}"
+    data-errors='@json($errors->any() ? $errors->all() : [])'>
+</div>
 @endsection
 
 @push('scripts')
@@ -409,39 +401,49 @@
         const btnCheckout = document.getElementById('btn-checkout');
         const btnCancel = document.getElementById('btn-cancel');
 
-        // Automatic Toast / Alert SweetAlert2 dari Flash Session Laravel
-        @if(session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: "{{ session('success') }}",
-            timer: 3000,
-            showConfirmButton: false
-        });
-        @endif
+        // Flash Data Handling
+        const flashData = document.getElementById('flash-data').dataset;
+        const successMsg = flashData.success;
+        const errorMsg = flashData.error;
 
-        @if(session('error'))
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: "{{ session('error') }}"
-        });
-        @endif
+        let errorList = [];
+        try {
+            errorList = JSON.parse(flashData.errors || '[]');
+        } catch (e) {
+            errorList = [];
+        }
 
-        @if($errors->any())
-        const errorList = @json($errors->all());
-        let errorHtml = '<ul class="text-start mb-0">';
-        errorList.forEach(err => {
-            errorHtml += `<li>${err}</li>`;
-        });
-        errorHtml += '</ul>';
+        if (successMsg) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: successMsg,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
 
-        Swal.fire({
-            icon: 'error',
-            title: 'Periksa Inputan Anda!',
-            html: errorHtml
-        });
-        @endif
+        if (errorMsg) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: errorMsg
+            });
+        }
+
+        if (errorList.length > 0) {
+            let errorHtml = '<ul class="text-start mb-0">';
+            errorList.forEach(err => {
+                errorHtml += `<li>${err}</li>`;
+            });
+            errorHtml += '</ul>';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Periksa Inputan Anda!',
+                html: errorHtml
+            });
+        }
 
         // Search Input Debounce
         const searchInput = document.getElementById('search-input');
@@ -461,6 +463,29 @@
             searchInput.focus();
             searchInput.value = val;
         }
+
+        // ==========================================
+        // PROTEKSI ANTI-SPAM TOMBOL TAMBAH PRODUK
+        // ==========================================
+        const addProductForms = document.querySelectorAll('.form-add-product');
+        addProductForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('.btn-submit-add');
+                
+                // Jika tombol sudah di-disable, cegah submit ganda
+                if (submitBtn.disabled) {
+                    e.preventDefault();
+                    return;
+                }
+
+                // Disable tombol dan ubah teks jadi indikator loading
+                submitBtn.disabled = true;
+                const btnTextSpan = submitBtn.querySelector('.btn-text');
+                if(btnTextSpan) {
+                    btnTextSpan.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Memproses...';
+                }
+            });
+        });
 
         // Konfirmasi Checkout
         if (btnCheckout) {
@@ -491,7 +516,7 @@
             });
         }
 
-        // Konfirmasi Hapus Transaksi Secara Permanen
+        // Konfirmasi Hapus Transaksi
         if (btnCancel) {
             btnCancel.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -520,7 +545,7 @@
             });
         }
 
-        // Konfirmasi Hapus Item Individu dari Keranjang
+        // Konfirmasi Hapus Item Individu
         const deleteItemBtns = document.querySelectorAll('.btn-delete-item');
         deleteItemBtns.forEach(btn => {
             btn.addEventListener('click', function(e) {
