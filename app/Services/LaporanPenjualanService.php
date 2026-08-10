@@ -34,7 +34,7 @@ public function ringkasanHariIni(): array
         ->join('produk', 'produk.id', '=', 'item_penjualan.produk_id')
         ->whereDate('penjualan.created_at', Carbon::today())
         ->where('penjualan.status', 'COMPLETED')
-        ->groupBy('produk.id', 'produk.nama')
+       ->groupBy('produk.id', 'produk.nama', 'produk.stok')
         ->select(
             'produk.nama',
             'produk.stok',
