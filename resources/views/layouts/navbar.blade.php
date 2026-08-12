@@ -18,14 +18,14 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-lg-1">
         <li class="nav-item">
           <a class="nav-link custom-nav-link {{ Request::is('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-            <i class="bi bi-grid-1x2 me-1"></i> Dashboard
+            <i class="bi bi-grid-1x2 me-1"></i> Beranda
           </a>
         </li>
 
         @if(auth()->check() && strtolower(optional(auth()->user()->role)->name) === 'admin')
         <li class="nav-item">
           <a class="nav-link custom-nav-link {{ Request::is('admin/users*') ? 'active' : '' }}" href="{{ route('admin.users') }}">
-            <i class="bi bi-people me-1"></i> Users
+            <i class="bi bi-people me-1"></i> Pengguna
           </a>
         </li>
         @endif

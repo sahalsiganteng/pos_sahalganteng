@@ -21,10 +21,7 @@
                     </p>
                 </div>
                 <!-- Menggunakan URL langsung agar tidak mengandalkan nama route -->
-                <a href="{{ url('/admin/users') }}" class="btn btn-outline-secondary text-secondary border-secondary rounded-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-arrow-left"></i>
-                    <span>Kembali</span>
-                </a>
+                
             </div>
 
             <!-- Form Card -->

@@ -20,10 +20,7 @@
                         Isi data produk baru ke dalam sistem katalog inventaris.
                     </p>
                 </div>
-                <a href="{{ route('produk.index') }}" class="btn btn-outline-secondary text-secondary border-secondary rounded-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-arrow-left"></i>
-                    <span>Kembali</span>
-                </a>
+                
             </div>
 
             <!-- Form Card -->

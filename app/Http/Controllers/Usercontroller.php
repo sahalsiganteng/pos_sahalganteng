@@ -18,14 +18,15 @@ class UserController extends Controller
     public function index(SearchRequest $request)
     {
         $keyword = $request->input('search');
-        
-        if ($keyword) {
-            $users = User::whereRaw("MATCH(name,email) AGAINST(? IN BOOLEAN MODE)", [$keyword])
-                ->paginate(10)
-                ->withQueryString();
-        } else {
-            $users = User::query()->paginate(10)->withQueryString();
-        }
+
+        $users = User::when($keyword, function ($query, $keyword) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'LIKE', "%{$keyword}%")
+                  ->orWhere('email', 'LIKE', "%{$keyword}%");
+            });
+        })
+        ->paginate(10)
+        ->withQueryString();
 
         return view('users.index', compact('users'));
     }
