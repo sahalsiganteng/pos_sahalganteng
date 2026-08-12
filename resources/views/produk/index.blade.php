@@ -99,13 +99,8 @@
                             {{ $product->nama }}
                         </h5>
 
+                        <!-- Price Box (Hanya Harga Jual) -->
                         <div class="price-box p-3 rounded-3 mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="text-secondary small">Harga Beli:</span>
-                                <span class="text-secondary small text-decoration-line-through">
-                                    Rp {{ number_format($product->harga_beli, 0, ',', '.') }}
-                                </span>
-                            </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-white small fw-medium">Harga Jual:</span>
                                 <span class="fw-bold text-emerald fs-6">

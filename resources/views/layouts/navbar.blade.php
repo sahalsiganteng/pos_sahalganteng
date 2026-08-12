@@ -43,6 +43,15 @@
         </li>
       </ul>
 
+      <!-- Realtime Clock & Date Section -->
+      <div class="d-none d-md-flex align-items-center gap-2 me-lg-3 px-3 py-1 rounded-3 navbar-time-badge">
+        <i class="bi bi-clock text-primary"></i>
+        <div class="text-start leading-tight">
+          <div id="nav-clock" class="fw-bold text-white small" style="font-size: 0.85rem; line-height: 1;">--:--:-- WIB</div>
+          <div id="nav-date" class="text-muted" style="font-size: 0.7rem; color: #94a3b8 !important;">-- --- ----</div>
+        </div>
+      </div>
+
       <!-- User Profile & Logout Section -->
       <div class="d-flex align-items-center gap-3 pt-3 pt-lg-0 border-top border-lg-0 border-secondary border-opacity-25">
         @if(auth()->check())
@@ -116,6 +125,11 @@
     font-weight: 600;
   }
 
+  .navbar-time-badge {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
   .btn-logout-neon {
     background: rgba(239, 68, 68, 0.15);
     color: #f87171;
@@ -130,3 +144,31 @@
     box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
   }
 </style>
+
+<script>
+  function updateNavClock() {
+    const now = new Date();
+    
+    // Format Jam
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const clockElement = document.getElementById('nav-clock');
+    if (clockElement) {
+      clockElement.textContent = `${hours}:${minutes}:${seconds} WIB`;
+    }
+
+    // Format Tanggal
+    const options = { day: 'numeric', month: 'short', year: 'numeric' };
+    const dateString = now.toLocaleDateString('id-ID', options);
+    const dateElement = document.getElementById('nav-date');
+    if (dateElement) {
+      dateElement.textContent = dateString;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateNavClock();
+    setInterval(updateNavClock, 1000);
+  });
+</script>

@@ -267,7 +267,7 @@
                                     @forelse($sale->itemPenjualan as $item)
                                     <tr>
                                         <td class="ps-3">
-                                            <div class="fw-bold text-white">{{ $item->produk->nama }}</div>
+                                            <div class="fw-bold text-">{{ $item->produk->nama }}</div>
                                             <small class="text-secondary">
                                                 Rp {{ number_format($item->produk->harga_jual, 0, ',', '.') }} (Stok: {{ $item->produk->stok }})
                                             </small>
@@ -287,7 +287,7 @@
                                                     {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
                                             </form>
                                         </td>
-                                        <td class="text-end font-monospace fw-bold text-white">
+                                        <td class="text-end font-monospace fw-bold text-dark">
                                             Rp {{ number_format($item->subtotal, 0, ',', '.') }}
                                         </td>
                                         <td class="text-center">

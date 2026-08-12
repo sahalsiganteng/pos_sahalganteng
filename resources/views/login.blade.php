@@ -17,7 +17,7 @@
         <div class="card dark-card border-0 p-4 p-md-5 login-card">
 
             <div class="text-center mb-4">
-                <h3 class="fw-bold text-white mb-1">Welcome Back 👋</h3>
+                <h3 class="fw-bold text-white mb-1">Selamat Datang</h3>
                 <p class="text-secondary small mb-0">Silakan login untuk mengakses sistem POS</p>
             </div>
 
