@@ -19,6 +19,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // Rute Halaman Tentang Saya
+    Route::get('/tentang-saya', function () {
+        return view('tentang-saya');
+    })->name('tentang.saya');
+
     // Admin-only Routes
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [Usercontroller::class, 'index'])->name('users');

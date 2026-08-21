@@ -1,4 +1,3 @@
-<!-- memanggil file app.blade.php -->
 @extends('layouts.app')
 
 <!-- mengirimkan nilai ke title untuk ditampilkan -->
@@ -25,8 +24,8 @@
         padding-bottom: 4rem;
         z-index: 1;
         background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%),
-                    linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%),
+            linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
     }
 
     .glass-card {
@@ -72,10 +71,29 @@
         font-size: 1.4rem;
     }
 
-    .icon-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
-    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .icon-cyan { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
-    .icon-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .icon-indigo {
+        background: rgba(99, 102, 241, 0.15);
+        color: #818cf8;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .icon-emerald {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .icon-cyan {
+        background: rgba(6, 182, 212, 0.15);
+        color: #22d3ee;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .icon-purple {
+        background: rgba(168, 85, 247, 0.15);
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.3);
+    }
 
     .section-title-glow {
         font-weight: 700;
@@ -154,13 +172,28 @@
         font-weight: 800;
         font-size: 0.9rem;
     }
-    .rank-1 { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
-    .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
-    .rank-3 { background: linear-gradient(135deg, #b45309, #78350f); color: #fff; }
-    .rank-normal { background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
-</style>
 
-@include('layouts.navbar')
+    .rank-1 {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #fff;
+        box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+    }
+
+    .rank-2 {
+        background: linear-gradient(135deg, #94a3b8, #64748b);
+        color: #fff;
+    }
+
+    .rank-3 {
+        background: linear-gradient(135deg, #b45309, #78350f);
+        color: #fff;
+    }
+
+    .rank-normal {
+        background: rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
+    }
+</style>
 
 <div class="dashboard-bg-wrapper">
 
@@ -376,19 +409,19 @@
                             <tr>
                                 <td class="ps-4">
                                     @if($loop->first)
-                                        <div class="rank-circle rank-1" title="Peringkat 1">
-                                            <i class="bi bi-trophy-fill"></i>
-                                        </div>
+                                    <div class="rank-circle rank-1" title="Peringkat 1">
+                                        <i class="bi bi-trophy-fill"></i>
+                                    </div>
                                     @elseif($loop->iteration == 2)
-                                        <div class="rank-circle rank-2" title="Peringkat 2">
-                                            <i class="bi bi-trophy-fill"></i>
-                                        </div>
+                                    <div class="rank-circle rank-2" title="Peringkat 2">
+                                        <i class="bi bi-trophy-fill"></i>
+                                    </div>
                                     @elseif($loop->iteration == 3)
-                                        <div class="rank-circle rank-3" title="Peringkat 3">
-                                            <i class="bi bi-trophy-fill"></i>
-                                        </div>
+                                    <div class="rank-circle rank-3" title="Peringkat 3">
+                                        <i class="bi bi-trophy-fill"></i>
+                                    </div>
                                     @else
-                                        <div class="rank-circle rank-normal">#{{ $loop->iteration }}</div>
+                                    <div class="rank-circle rank-normal">#{{ $loop->iteration }}</div>
                                     @endif
                                 </td>
                                 <td>

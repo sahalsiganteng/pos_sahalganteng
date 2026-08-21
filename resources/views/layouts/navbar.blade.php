@@ -41,6 +41,13 @@
             <i class="bi bi-cart-check me-1"></i> Penjualan
           </a>
         </li>
+
+        <!-- MENU TENTANG SAYA DITAMBAHKAN DI SINI -->
+        <li class="nav-item">
+          <a class="nav-link custom-nav-link {{ Request::is('tentang-saya*') ? 'active' : '' }}" href="{{ route('tentang.saya') }}">
+            <i class="bi bi-person-badge me-1"></i> Tentang Saya
+          </a>
+        </li>
       </ul>
 
       <!-- Realtime Clock & Date Section -->
