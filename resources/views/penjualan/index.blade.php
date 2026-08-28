@@ -9,7 +9,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">
-                <i class="bi bi-receipt text-primary"></i> Rekap Penjualan
+                <i class="bi bi-receipt text-white"></i> Rekap Penjualan
             </h2>
             <p class="text-secondary mb-0">
                 Kelola data log transaksi, riwayat penjualan, dan status pembayaran.

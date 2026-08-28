@@ -247,7 +247,7 @@
                             <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
                                 <i class="bi bi-cart3 text-primary"></i> Keranjang Belanja
                             </h5>
-                            <span class="badge bg-primary bg-opacity-20 text-primary border border-primary border-opacity-30 rounded-pill px-3">
+                            <span class="badge bg-primary bg-opacity-20 text-white border border-primary border-opacity-30 rounded-pill px-3">
                                 {{ count($sale->itemPenjualan) }} Item
                             </span>
                         </div>
