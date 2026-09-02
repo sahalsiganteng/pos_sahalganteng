@@ -4,7 +4,6 @@
 
 @section('content')
 
-@include('layouts.navbar')
 
 <div class="container py-4">
 
