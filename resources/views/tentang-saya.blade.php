@@ -21,7 +21,7 @@
                     <div class="position-relative d-inline-block">
                         <div class="rounded-circle overflow-hidden border border-3 border-primary shadow" style="width: 150px; height: 150px; background: rgba(99, 102, 241, 0.1);">
                             <!-- Ganti path foto sesuai dengan lokasi gambar Anda di folder public -->
-                            <img src="{{ asset('storage/images/foto bg halll.jpeg') }}" alt="Foto Profil sahal" class="w-100 h-100 object-fit-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/150/1e293b/6366f1?text=Bunga';">
+<img src="{{ asset('images/foto.jpeg') }}" alt="Foto Profil sahal" class="w-100 h-100 object-fit-cover">    
                         </div>
                     </div>
                 </div>
