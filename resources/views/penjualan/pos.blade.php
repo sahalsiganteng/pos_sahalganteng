@@ -130,6 +130,15 @@
     .swal2-html-container {
         color: #94a3b8 !important;
     }
+
+    /* Animasi Input Cash */
+    .cash-input-container {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 @endpush
 
@@ -267,7 +276,7 @@
                                     @forelse($sale->itemPenjualan as $item)
                                     <tr>
                                         <td class="ps-3">
-                                            <div class="fw-bold text-">{{ $item->produk->nama }}</div>
+                                            <div class="fw-bold text-white">{{ $item->produk->nama }}</div>
                                             <small class="text-secondary">
                                                 Rp {{ number_format($item->produk->harga_jual, 0, ',', '.') }} (Stok: {{ $item->produk->stok }})
                                             </small>
@@ -287,7 +296,7 @@
                                                     {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
                                             </form>
                                         </td>
-                                        <td class="text-end font-monospace fw-bold text-dark">
+                                        <td class="text-end font-monospace fw-bold text-light">
                                             Rp {{ number_format($item->subtotal, 0, ',', '.') }}
                                         </td>
                                         <td class="text-center">
@@ -323,7 +332,7 @@
                         {{-- Ringkasan Total --}}
                         <div class="total-box p-3 mb-3 d-flex justify-content-between align-items-center">
                             <span class="fw-bold text-uppercase fs-7 text-white-50">Total Bayar</span>
-                            <span class="fs-2 font-monospace fw-bold">
+                            <span class="fs-2 font-monospace fw-bold" id="total-bayar-val" data-total="{{ $sale->itemPenjualan->sum('subtotal') }}">
                                 Rp {{ number_format($sale->itemPenjualan->sum('subtotal'), 0, ',', '.') }}
                             </span>
                         </div>
@@ -336,7 +345,7 @@
                             @method('PUT')
 
                             <div class="mb-3">
-                                <select name="payment_method" class="form-select form-control-custom fw-semibold @error('payment_method') is-invalid @enderror" {{ $sale->status === 'COMPLETED' ? 'disabled' : '' }}>
+                                <select name="payment_method" id="payment-method-select" class="form-select form-control-custom fw-semibold @error('payment_method') is-invalid @enderror" {{ $sale->status === 'COMPLETED' ? 'disabled' : '' }}>
                                     <option value="">-- Pilih Metode Pembayaran --</option>
                                     <option value="CASH" {{ $sale->payment_method === 'CASH' ? 'selected' : '' }}>CASH (TUNAI)</option>
                                     <option value="QRIS" {{ $sale->payment_method === 'QRIS' ? 'selected' : '' }}>QRIS / NON-TUNAI</option>
@@ -347,6 +356,27 @@
                                     {{ $message }}
                                 </div>
                                 @enderror
+                            </div>
+
+                            {{-- Input Nominal Cash / Tunai (Muncul Jika Pilih CASH) --}}
+                            <div class="mb-3 cash-input-container" id="cash-section" style="display: none;">
+                                <label class="form-label text-slate-300 fs-7 fw-semibold">Uang Diterima (Tunai)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-end-0 border-secondary text-secondary">Rp</span>
+                                    <input type="number" 
+                                        name="cash_given" 
+                                        id="cash-given-input" 
+                                        class="form-control form-control-custom border-start-0 ps-2 font-monospace fw-bold text-white bg-dark" 
+                                        placeholder="0" 
+                                        min="0"
+                                        value="{{ old('cash_given', $sale->cash_given ?? '') }}">
+                                </div>
+
+                                {{-- Informasi Kembalian --}}
+                                <div class="mt-2 p-2 rounded-2 bg-dark border border-secondary d-flex justify-content-between align-items-center">
+                                    <span class="text-secondary fs-7 fw-semibold">Kembalian:</span>
+                                    <span class="font-monospace fw-bold text-success fs-6" id="change-display">Rp 0</span>
+                                </div>
                             </div>
 
                             <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary w-100 py-2 fw-bold text-uppercase mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
@@ -406,6 +436,50 @@
         const btnCheckout = document.getElementById('btn-checkout');
         const btnCancel = document.getElementById('btn-cancel');
 
+        // Elemen Fitur Cash & Kembalian
+        const paymentMethodSelect = document.getElementById('payment-method-select');
+        const cashSection = document.getElementById('cash-section');
+        const cashGivenInput = document.getElementById('cash-given-input');
+        const changeDisplay = document.getElementById('change-display');
+        const totalBayarEl = document.getElementById('total-bayar-val');
+
+        // Fungsi Hitung Kembalian
+        function calculateChange() {
+            const totalBayar = parseInt(totalBayarEl.dataset.total) || 0;
+            const cashGiven = parseInt(cashGivenInput.value) || 0;
+            const change = cashGiven - totalBayar;
+
+            if (change >= 0) {
+                changeDisplay.textContent = 'Rp ' + change.toLocaleString('id-ID');
+                changeDisplay.classList.remove('text-danger');
+                changeDisplay.classList.add('text-success');
+            } else {
+                changeDisplay.textContent = 'Uang Kurang (Rp ' + Math.abs(change).toLocaleString('id-ID') + ')';
+                changeDisplay.classList.remove('text-success');
+                changeDisplay.classList.add('text-danger');
+            }
+        }
+
+        // Toggle Tampilan Input Cash
+        function toggleCashSection() {
+            if (paymentMethodSelect && paymentMethodSelect.value === 'CASH') {
+                cashSection.style.display = 'block';
+                calculateChange();
+            } else {
+                if (cashSection) cashSection.style.display = 'none';
+                if (cashGivenInput) cashGivenInput.value = '';
+            }
+        }
+
+        if (paymentMethodSelect) {
+            paymentMethodSelect.addEventListener('change', toggleCashSection);
+            toggleCashSection(); // Pengecekan saat halaman dimuat ulang/error validasi
+        }
+
+        if (cashGivenInput && totalBayarEl) {
+            cashGivenInput.addEventListener('input', calculateChange);
+        }
+
         // Flash Data Handling
         const flashData = document.getElementById('flash-data').dataset;
         const successMsg = flashData.success;
@@ -458,7 +532,7 @@
                 let val = parseInt(this.value);
 
                 if (val > maxStok) {
-                    this.value = maxStok; // Batasi kembali ke maksimal stok
+                    this.value = maxStok; 
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
@@ -468,8 +542,6 @@
                         timer: 2000,
                         timerProgressBar: true
                     });
-                } else if (val < 1 || isNaN(val)) {
-                    // Biarkan kosong dulu saat diketik atau minimal 1
                 }
             });
         });
@@ -510,10 +582,26 @@
             });
         });
 
-        // Konfirmasi Checkout
+        // Konfirmasi Checkout & Validasi Nominal Cash
         if (btnCheckout) {
             btnCheckout.addEventListener('click', function(e) {
                 e.preventDefault();
+
+                // Validasi jika pembayaran CASH, pastikan uang yang dibayar tidak kurang
+                if (paymentMethodSelect && paymentMethodSelect.value === 'CASH') {
+                    const totalBayar = parseInt(totalBayarEl.dataset.total) || 0;
+                    const cashGiven = parseInt(cashGivenInput.value) || 0;
+
+                    if (cashGiven < totalBayar) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Uang Tunai Kurang!',
+                            text: 'Jumlah uang tunai yang diberikan pelanggan kurang dari total tagihan.',
+                        });
+                        return;
+                    }
+                }
+
                 Swal.fire({
                     title: 'Selesaikan Transaksi?',
                     text: "Pastikan metode pembayaran dan nominal transaksi sudah sesuai.",

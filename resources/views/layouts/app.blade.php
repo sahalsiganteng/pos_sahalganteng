@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Aplikasi POS')</title>
+    <title>@yield('title', 'Toko Perintis')</title>
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Bootstrap CSS Fallback & Icons -->
@@ -16,12 +16,11 @@
     <style>
         body {
             font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
-            background-color: #0f172a; /* Base dark mode background */
+            background-color: #0f172a;
             color: #f8fafc;
             min-height: 100vh;
         }
 
-        /* Style Opsional untuk Halaman Login */
         body.login-page {
             background: linear-gradient(135deg, #4facfe, #00c6ff) !important;
             color: #212529;
@@ -56,7 +55,6 @@
             box-shadow: 0 10px 20px rgba(13, 110, 253, .35);
         }
 
-        /* Navbar Custom Styling */
         .custom-navbar {
             background: rgba(15, 23, 42, 0.85) !important;
             backdrop-filter: blur(16px);
@@ -120,7 +118,6 @@
             box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
         }
 
-        /* Custom SweetAlert2 Dark Mode Styling */
         .dark-theme-popup {
             background: #1e293b !important;
             color: #f8fafc !important;
@@ -152,16 +149,15 @@
 </head>
 <body class="@yield('body-class')">
 
-    {{-- Navbar Utama (Hanya muncul jika user sudah login / jika tidak di halaman login) --}}
     @auth
     <nav class="navbar navbar-expand-lg sticky-top custom-navbar">
       <div class="container py-1">
-        <!-- Brand Logo -->
-        <a class="navbar-brand fw-bold text-white d-flex align-items-center gap-2" href="{{ route('dashboard') }}">
+        <!-- Brand Logo -> Diarahkan kembali ke route dashboard (Beranda) -->
+        <a class="navbar-brand fw-bold text-white d-flex align-items-center gap-2" href="{{ route('tentang.toko') }}">
           <div class="brand-icon">
             <i class="bi bi-shop text-primary"></i>
           </div>
-          <span>Aplikasi <span class="text-primary-gradient">POS</span></span>
+          <span>Toko <span class="text-primary-gradient">Perintis</span></span>
         </a>
 
         <!-- Toggle Button Mobile -->
@@ -197,6 +193,7 @@
                 <i class="bi bi-cart-check me-1"></i> Penjualan
               </a>
             </li>
+
 
             <!-- Menu Tentang Saya -->
             <li class="nav-item">
@@ -240,7 +237,6 @@
     </nav>
     @endauth
 
-    {{-- Notifikasi Toast / Alert --}}
     <div class="container pt-3">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">

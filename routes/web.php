@@ -24,6 +24,11 @@ Route::middleware('auth')->group(function () {
         return view('tentang-saya');
     })->name('tentang.saya');
 
+    // Rute Halaman Tentang Toko
+    Route::get('/tentang-toko', function () {
+        return view('tentang-toko');
+    })->name('tentang.toko');
+
     // Admin-only Routes
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [Usercontroller::class, 'index'])->name('users');
@@ -31,14 +36,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/users', [Usercontroller::class, 'store'])->name('users.store');
         
         Route::get('/users/edit/{user}', [Usercontroller::class, 'edit'])->name('users.edit');
-        
-        /* 
-         * PERBAIKAN DI SINI:
-         * URL diubah dari '/users/update/{user}' menjadi '/users/{user}'
-         * Supaya cocok dengan form action di view: url('/admin/users/' . $user->id)
-         */
         Route::put('/users/{user}', [Usercontroller::class, 'update'])->name('users.update');
-        
         Route::delete('/users/{user}', [Usercontroller::class, 'destroy'])->name('users.destroy');
     });
 
@@ -47,7 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('/produk', ProdukController::class);
         Route::resource('/penjualan', PenjualanController::class);
         
-        // Rute tambahan POS (Sesuai panggilan di view pos.blade.php)
+        // Rute tambahan POS
         Route::post('/penjualan/{penjualan}/add-item', [ItemPenjualanController::class, 'store'])->name('penjualan.add-item');
         Route::patch('/penjualan/{penjualan}/update-item/{itempenjualan}', [ItemPenjualanController::class, 'update'])->name('penjualan.update-item');
         Route::delete('/penjualan/{penjualan}/remove-item/{itempenjualan}', [ItemPenjualanController::class, 'destroy'])->name('penjualan.remove-item');

@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Tentang Saya - Toko Perintis')
+
 @section('content')
 <div class="py-4">
     <div class="container">
@@ -20,8 +22,8 @@
                 <div class="col-lg-3 text-center">
                     <div class="position-relative d-inline-block">
                         <div class="rounded-circle overflow-hidden border border-3 border-primary shadow" style="width: 150px; height: 150px; background: rgba(99, 102, 241, 0.1);">
-                            <!-- Ganti path foto sesuai dengan lokasi gambar Anda di folder public -->
-<img src="{{ asset('images/foto.jpeg') }}" alt="Foto Profil sahal" class="w-100 h-100 object-fit-cover">    
+                            <!-- Pastikan file foto.jpeg sudah ada di folder public/images/ -->
+                            <img src="{{ asset('images/foto.jpeg') }}" alt="Foto Profil Sahal" class="w-100 h-100 object-fit-cover">    
                         </div>
                     </div>
                 </div>
@@ -66,7 +68,7 @@
                             <span class="p-2 rounded-2" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">⚙️</span> 
                             Stack Teknologi & Bahasa
                         </h5>
-                        <ul class="list-unstyled small text-muted mb-0 space-y-2">
+                        <ul class="list-unstyled small text-muted mb-0">
                             <li class="mb-2 d-flex justify-content-between border-bottom border-secondary border-opacity-10 pb-2">
                                 <span class="text-light">Bahasa Pemrograman:</span>
                                 <strong class="text-primary">PHP & JavaScript</strong>
@@ -87,10 +89,6 @@
                     </div>
                 </div>
 
-            </div>
-
-            <!-- Tombol Navigasi Kembali -->
-            <div class="mt-4 text-end">
             </div>
 
         </div>

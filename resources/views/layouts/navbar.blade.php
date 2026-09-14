@@ -1,11 +1,11 @@
 <nav class="navbar navbar-expand-lg sticky-top custom-navbar">
   <div class="container py-1">
-    <!-- Brand Logo -->
-    <a class="navbar-brand fw-bold text-white d-flex align-items-center gap-2" href="{{ route('dashboard') }}">
+    <!-- Brand Logo (Diperbaiki & Diarahkan ke Tentang Toko) -->
+    <a class="navbar-brand fw-bold text-white d-flex align-items-center gap-2" href="{{ route('tentang.toko') }}" style="position: relative; z-index: 10;">
       <div class="brand-icon">
         <i class="bi bi-shop text-primary"></i>
       </div>
-      <span>Aplikasi <span class="text-primary-gradient">POS</span></span>
+      <span>Toko <span class="text-primary-gradient">Perintis</span></span>
     </a>
 
     <!-- Toggle Button Mobile -->
@@ -17,7 +17,8 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-lg-1">
         <li class="nav-item">
-          <a class="nav-link custom-nav-link {{ Request::is('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+         <!-- Brand Logo -->
+<a class="navbar-brand fw-bold text-white d-flex align-items-center gap-2" href="{{ route('dashboard') }}">
             <i class="bi bi-grid-1x2 me-1"></i> Beranda
           </a>
         </li>
@@ -42,7 +43,7 @@
           </a>
         </li>
 
-        <!-- MENU TENTANG SAYA DITAMBAHKAN DI SINI -->
+        <!-- MENU TENTANG SAYA -->
         <li class="nav-item">
           <a class="nav-link custom-nav-link {{ Request::is('tentang-saya*') ? 'active' : '' }}" href="{{ route('tentang.saya') }}">
             <i class="bi bi-person-badge me-1"></i> Tentang Saya
