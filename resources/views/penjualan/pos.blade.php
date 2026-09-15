@@ -131,13 +131,21 @@
         color: #94a3b8 !important;
     }
 
-    /* Animasi Input Cash */
-    .cash-input-container {
+    /* Animasi Input Cash / QRIS */
+    .cash-input-container,
+    .qris-container {
         animation: fadeIn 0.3s ease-in-out;
     }
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(-5px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Box QRIS */
+    .qris-box {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 14px;
     }
 </style>
 @endpush
@@ -379,6 +387,20 @@
                                 </div>
                             </div>
 
+                            {{-- Tampilan QR Code QRIS (Muncul Jika Pilih QRIS) --}}
+                            <div class="mb-3 qris-container text-center" id="qris-section" style="display: none;">
+                                <label class="form-label text-slate-300 fs-7 fw-semibold d-block">Scan QRIS untuk Membayar</label>
+                                 <div class="inline-block bg-white p-2 rounded-xl cursor-pointer" onclick="openQrisModal()" title="Ketuk untuk memperbesar">
+                                    <img src="{{ asset('imageqris/qrallpay.jpg') }}"
+                                        alt="QRIS Code"
+                                        style="width: 220px; height: 220px; object-fit: contain;"
+                                        onerror="this.style.display='none'">
+                                </div>
+                                <p class="text-secondary fs-8 mt-2 mb-0">
+                                    Pastikan nominal yang dibayar pelanggan sesuai Total Bayar di atas.
+                                </p>
+                            </div>
+
                             <a href="{{ route('penjualan.index') }}" class="btn btn-outline-secondary w-100 py-2 fw-bold text-uppercase mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
                                 <i class="bi bi-arrow-left-circle-fill"></i> Batal / Kembali ke Daftar
                             </a>
@@ -443,6 +465,9 @@
         const changeDisplay = document.getElementById('change-display');
         const totalBayarEl = document.getElementById('total-bayar-val');
 
+        // Elemen Fitur QRIS
+        const qrisSection = document.getElementById('qris-section');
+
         // Fungsi Hitung Kembalian
         function calculateChange() {
             const totalBayar = parseInt(totalBayarEl.dataset.total) || 0;
@@ -460,20 +485,29 @@
             }
         }
 
-        // Toggle Tampilan Input Cash
-        function toggleCashSection() {
-            if (paymentMethodSelect && paymentMethodSelect.value === 'CASH') {
-                cashSection.style.display = 'block';
+        // Toggle Tampilan Input Cash / QR QRIS sesuai Metode Pembayaran
+        function togglePaymentSections() {
+            const method = paymentMethodSelect ? paymentMethodSelect.value : '';
+
+            // Reset dulu semuanya
+            if (cashSection) cashSection.style.display = 'none';
+            if (qrisSection) qrisSection.style.display = 'none';
+
+            if (method === 'CASH') {
+                if (cashSection) cashSection.style.display = 'block';
                 calculateChange();
-            } else {
-                if (cashSection) cashSection.style.display = 'none';
-                if (cashGivenInput) cashGivenInput.value = '';
+            } else if (cashGivenInput) {
+                cashGivenInput.value = '';
+            }
+
+            if (method === 'QRIS') {
+                if (qrisSection) qrisSection.style.display = 'block';
             }
         }
 
         if (paymentMethodSelect) {
-            paymentMethodSelect.addEventListener('change', toggleCashSection);
-            toggleCashSection(); // Pengecekan saat halaman dimuat ulang/error validasi
+            paymentMethodSelect.addEventListener('change', togglePaymentSections);
+            togglePaymentSections(); // Pengecekan saat halaman dimuat ulang/error validasi
         }
 
         if (cashGivenInput && totalBayarEl) {
