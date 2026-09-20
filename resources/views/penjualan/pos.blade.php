@@ -50,11 +50,17 @@
 
     /* Table Styling Dark */
     .table-cart {
-        background: transparent;
+        /* Sengaja pakai warna solid (bukan transparent) supaya teks nama produk
+           tetap terbaca walau efek glass-blur di elemen belakangnya tidak
+           ter-render sempurna oleh browser. */
+        --bs-table-bg: #0f172a;
+        --bs-table-color: #e2e8f0;
+        background-color: #0f172a;
         color: #e2e8f0;
     }
 
     .table-cart thead th {
+        --bs-table-bg: rgba(15, 23, 42, 0.8);
         background-color: rgba(15, 23, 42, 0.8);
         color: #94a3b8;
         font-weight: 700;
@@ -66,6 +72,11 @@
     .table-cart td {
         border-color: rgba(255, 255, 255, 0.05);
         color: #e2e8f0;
+    }
+
+    .table-cart .cart-produk-nama {
+        color: #f8fafc !important;
+        font-weight: 700;
     }
 
     /* Total Box Display */
@@ -147,6 +158,97 @@
         border-radius: 12px;
         padding: 14px;
     }
+
+    /* Box Transfer Bank */
+    .transfer-box {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* Gambar QRIS bisa di-klik untuk diperbesar (mirip preview foto WhatsApp) */
+    .zoomable-image {
+        cursor: zoom-in;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .zoomable-image:hover {
+        transform: scale(1.03);
+    }
+
+    /* ===================== LIGHTBOX / PREVIEW FOTO ===================== */
+    .image-lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.92);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.25s ease-in-out;
+    }
+
+    .image-lightbox.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .lightbox-img-wrapper {
+        max-width: 92vw;
+        max-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lightbox-img {
+        max-width: 92vw;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        background: #fff;
+        transform: scale(0.85);
+        transition: transform 0.25s ease-in-out;
+    }
+
+    .image-lightbox.active .lightbox-img {
+        transform: scale(1);
+    }
+
+    .lightbox-close {
+        position: absolute;
+        top: 18px;
+        right: 24px;
+        color: #ffffff;
+        font-size: 2.2rem;
+        font-weight: 300;
+        line-height: 1;
+        cursor: pointer;
+        user-select: none;
+        z-index: 2001;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        transition: background 0.2s ease-in-out;
+    }
+
+    .lightbox-close:hover {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .lightbox-hint {
+        position: absolute;
+        bottom: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+    }
 </style>
 @endpush
 
@@ -181,8 +283,7 @@
 
                     {{-- Pencarian --}}
                     <div class="mb-3">
-                        <form id="search-form" method="GET" action="{{ route('penjualan.create') }}">
-                            <input type="hidden" name="sale_id" value="{{ $sale->id }}">
+                        <form id="search-form" method="GET" action="{{ route('penjualan.edit', $sale->id) }}">
                             <div class="input-group">
                                 <span class="input-group-text bg-dark border-end-0 border-secondary text-secondary">
                                     <i class="bi bi-search"></i>
@@ -284,9 +385,9 @@
                                     @forelse($sale->itemPenjualan as $item)
                                     <tr>
                                         <td class="ps-3">
-                                            <div class="fw-bold text-white">{{ $item->produk->nama }}</div>
+                                            <div class="cart-produk-nama">{{ $item->produk->nama ?? 'Produk Dihapus' }}</div>
                                             <small class="text-secondary">
-                                                Rp {{ number_format($item->produk->harga_jual, 0, ',', '.') }} (Stok: {{ $item->produk->stok }})
+                                                Rp {{ number_format($item->produk->harga_jual ?? 0, 0, ',', '.') }} (Stok: {{ $item->produk->stok ?? 0 }})
                                             </small>
                                         </td>
                                         <td>
@@ -297,9 +398,9 @@
                                                     name="quantity"
                                                     value="{{ $item->kuantitas }}"
                                                     min="1"
-                                                    max="{{ $item->produk->stok }}"
+                                                    max="{{ $item->produk->stok ?? $item->kuantitas }}"
                                                     class="form-control form-control-sm form-control-custom text-center fw-bold input-qty-limit"
-                                                    data-max-stok="{{ $item->produk->stok }}"
+                                                    data-max-stok="{{ $item->produk->stok ?? $item->kuantitas }}"
                                                     onchange="this.form.submit()"
                                                     {{ $sale->status === 'COMPLETED' ? 'readonly' : '' }}>
                                             </form>
@@ -353,10 +454,16 @@
                             @method('PUT')
 
                             <div class="mb-3">
+                                @php
+                                    // Perbaikan bug: kolom di model bernama "metode_pembayaran", bukan
+                                    // "payment_method" (itu cuma nama input form), jadi harus dibaca dari sana.
+                                    $selectedMethod = old('payment_method', $sale->metode_pembayaran);
+                                @endphp
                                 <select name="payment_method" id="payment-method-select" class="form-select form-control-custom fw-semibold @error('payment_method') is-invalid @enderror" {{ $sale->status === 'COMPLETED' ? 'disabled' : '' }}>
                                     <option value="">-- Pilih Metode Pembayaran --</option>
-                                    <option value="CASH" {{ $sale->payment_method === 'CASH' ? 'selected' : '' }}>CASH (TUNAI)</option>
-                                    <option value="QRIS" {{ $sale->payment_method === 'QRIS' ? 'selected' : '' }}>QRIS / NON-TUNAI</option>
+                                    <option value="CASH" {{ $selectedMethod === 'CASH' ? 'selected' : '' }}>CASH (TUNAI)</option>
+                                    <option value="QRIS" {{ $selectedMethod === 'QRIS' ? 'selected' : '' }}>QRIS / NON-TUNAI</option>
+                                    <option value="TRANSFER" {{ $selectedMethod === 'TRANSFER' ? 'selected' : '' }}>TRANSFER BANK</option>
                                 </select>
                                 
                                 @error('payment_method')
@@ -387,17 +494,47 @@
                                 </div>
                             </div>
 
-                            {{-- Tampilan QR Code QRIS (Muncul Jika Pilih QRIS) --}}
+                            {{-- Tampilan QR Code QRIS --}}
                             <div class="mb-3 qris-container text-center" id="qris-section" style="display: none;">
                                 <label class="form-label text-slate-300 fs-7 fw-semibold d-block">Scan QRIS untuk Membayar</label>
-                                 <div class="inline-block bg-white p-2 rounded-xl cursor-pointer" onclick="openQrisModal()" title="Ketuk untuk memperbesar">
+                                <div class="qris-box d-inline-block">
                                     <img src="{{ asset('imageqris/qrallpay.jpg') }}"
                                         alt="QRIS Code"
+                                        class="zoomable-image"
                                         style="width: 220px; height: 220px; object-fit: contain;"
                                         onerror="this.style.display='none'">
                                 </div>
                                 <p class="text-secondary fs-8 mt-2 mb-0">
                                     Pastikan nominal yang dibayar pelanggan sesuai Total Bayar di atas.
+                                    <br>
+                                    <span class="fst-italic">Tap gambar QR untuk memperbesar</span>
+                                </p>
+                            </div>
+
+                            {{-- Tampilan Info Rekening untuk Metode TRANSFER --}}
+                            <div class="mb-3 transfer-container" id="transfer-section" style="display: none;">
+                                <label class="form-label text-slate-300 fs-7 fw-semibold d-block">Transfer ke Rekening Berikut</label>
+                                <div class="transfer-box p-3 rounded-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-secondary fs-8">Bank</span>
+                                        <span class="fw-bold text-white">BCA</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-secondary fs-8">Atas Nama</span>
+                                        <span class="fw-bold text-white">Toko Perintis</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-secondary fs-8">No. Rekening</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold font-monospace text-white fs-6" id="transfer-rekening-number">1234567890</span>
+                                            <button type="button" id="btn-copy-rekening" class="btn btn-sm btn-outline-light border-secondary py-0 px-2" title="Salin nomor rekening">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-secondary fs-8 mt-2 mb-0">
+                                    Pastikan nominal transfer sesuai Total Bayar di atas, lalu konfirmasi ke kasir sebelum menekan tombol Checkout.
                                 </p>
                             </div>
 
@@ -448,6 +585,15 @@
     data-error="{{ session('error') }}"
     data-errors='@json($errors->any() ? $errors->all() : [])'>
 </div>
+
+{{-- ===================== LIGHTBOX / PREVIEW FOTO (mirip WhatsApp) ===================== --}}
+<div class="image-lightbox" id="image-lightbox">
+    <span class="lightbox-close" id="lightbox-close" title="Tutup">&times;</span>
+    <div class="lightbox-img-wrapper">
+        <img src="" alt="Preview" id="lightbox-img" class="lightbox-img">
+    </div>
+    <span class="lightbox-hint">Klik di luar gambar atau tekan ESC untuk menutup</span>
+</div>
 @endsection
 
 @push('scripts')
@@ -467,6 +613,11 @@
 
         // Elemen Fitur QRIS
         const qrisSection = document.getElementById('qris-section');
+
+        // Elemen Fitur Transfer Bank
+        const transferSection = document.getElementById('transfer-section');
+        const btnCopyRekening = document.getElementById('btn-copy-rekening');
+        const rekeningNumberEl = document.getElementById('transfer-rekening-number');
 
         // Fungsi Hitung Kembalian
         function calculateChange() {
@@ -492,6 +643,7 @@
             // Reset dulu semuanya
             if (cashSection) cashSection.style.display = 'none';
             if (qrisSection) qrisSection.style.display = 'none';
+            if (transferSection) transferSection.style.display = 'none';
 
             if (method === 'CASH') {
                 if (cashSection) cashSection.style.display = 'block';
@@ -503,6 +655,44 @@
             if (method === 'QRIS') {
                 if (qrisSection) qrisSection.style.display = 'block';
             }
+
+            if (method === 'TRANSFER') {
+                if (transferSection) transferSection.style.display = 'block';
+            }
+        }
+
+        // Salin Nomor Rekening ke Clipboard
+        if (btnCopyRekening && rekeningNumberEl) {
+            btnCopyRekening.addEventListener('click', function() {
+                const text = rekeningNumberEl.textContent.trim();
+
+                const showCopiedToast = () => {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Nomor rekening disalin',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true
+                    });
+                };
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(showCopiedToast).catch(function() {
+                        Swal.fire({ icon: 'error', title: 'Gagal menyalin', text: 'Silahkan salin manual: ' + text });
+                    });
+                } else {
+                    // Fallback untuk browser lama / non-HTTPS
+                    const tempInput = document.createElement('textarea');
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    showCopiedToast();
+                }
+            });
         }
 
         if (paymentMethodSelect) {
@@ -698,6 +888,50 @@
                     }
                 });
             });
+        });
+
+        // ===================== LIGHTBOX / PREVIEW FOTO (mirip WhatsApp) =====================
+        const lightbox = document.getElementById('image-lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxClose = document.getElementById('lightbox-close');
+
+        function openLightbox(src, alt) {
+            lightboxImg.src = src;
+            lightboxImg.alt = alt || 'Preview';
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden'; // kunci scroll saat preview terbuka
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Klik gambar manapun yang punya class .zoomable-image -> buka preview
+        document.querySelectorAll('.zoomable-image').forEach(function(img) {
+            img.addEventListener('click', function() {
+                openLightbox(this.src, this.alt);
+            });
+        });
+
+        if (lightboxClose) {
+            lightboxClose.addEventListener('click', closeLightbox);
+        }
+
+        if (lightbox) {
+            // Klik di area luar gambar (background gelap) -> tutup
+            lightbox.addEventListener('click', function(e) {
+                if (e.target === lightbox) {
+                    closeLightbox();
+                }
+            });
+        }
+
+        // Tutup dengan tombol ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+                closeLightbox();
+            }
         });
     });
 </script>

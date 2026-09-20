@@ -146,6 +146,11 @@
             border: none !important;
         }
     </style>
+
+    {{-- PENTING: stack ini menampung semua @push('styles') dari view turunan
+         (pos.blade.php, struk.blade.php, dll). Tanpa baris ini, seluruh CSS
+         custom yang di-push dari halaman POS/Nota tidak akan pernah tampil. --}}
+    @stack('styles')
 </head>
 <body class="@yield('body-class')">
 

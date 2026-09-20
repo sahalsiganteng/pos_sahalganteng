@@ -43,32 +43,20 @@ class PenjualanController extends Controller
      */
     public function create(SearchRequest $request)
     {
-        $sale = Penjualan::firstOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'status'  => 'OPEN'
-            ],
-            [
-                'total_pembayaran'  => 0,
-                'metode_pembayaran' => 'CASH'
-            ]
-        );
+        // "Transaksi Baru" SELALU membuat keranjang baru yang kosong (tidak pernah
+        // melanjutkan transaksi OPEN lama), lalu langsung redirect ke halaman edit
+        // transaksi tsb. Dengan begitu ID transaksi tertanam di URL address bar
+        // (bukan cuma di hidden input), sehingga aksi tambah/kurang/hapus produk
+        // dan pencarian selanjutnya selalu kembali ke transaksi yang benar --
+        // tidak lagi bergantung pada header Referer yang gampang meleset.
+        $sale = Penjualan::create([
+            'user_id'           => Auth::id(),
+            'total_pembayaran'  => 0,
+            'metode_pembayaran' => 'CASH',
+            'status'            => 'OPEN',
+        ]);
 
-        $keyword = $request->input('search');
-
-        if ($keyword) {
-            $produk = Produk::when($keyword, function ($query) use ($keyword) {
-                $query->where('nama', 'like', '%' . $keyword . '%');
-            })
-            ->orderBy('nama')
-            ->get();
-        } else {
-            $produk = Produk::orderBy('nama')->get();
-        }
-
-        $mode = 'create';
-
-        return view('penjualan.pos', compact('sale', 'produk', 'mode'));
+        return redirect()->route('penjualan.edit', $sale->id);
     }
 
     /**
@@ -98,7 +86,7 @@ class PenjualanController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Penjualan $penjualan)
+    public function edit(SearchRequest $request, Penjualan $penjualan)
     {
         $sale = $penjualan;
 
@@ -110,7 +98,17 @@ class PenjualanController extends Controller
         }
 
         $sale->load(['user', 'itemPenjualan.produk']);
-        $produk = Produk::orderBy('nama')->get();
+
+        $keyword = $request->input('search');
+
+        if ($keyword) {
+            $produk = Produk::where('nama', 'like', '%' . $keyword . '%')
+                ->orderBy('nama')
+                ->get();
+        } else {
+            $produk = Produk::orderBy('nama')->get();
+        }
+
         $mode = 'edit';
 
         return view('penjualan.pos', compact('sale', 'penjualan', 'produk', 'mode'));
@@ -122,10 +120,14 @@ class PenjualanController extends Controller
     public function update(Request $request, Penjualan $penjualan)
     {
         $request->validate([
-            'payment_method' => 'required|in:CASH,QRIS,TRANSFER'
+            'payment_method' => 'required|in:CASH,QRIS,TRANSFER',
+            'cash_given'      => 'nullable|required_if:payment_method,CASH|integer|min:0',
         ], [
             'payment_method.required' => 'Silahkan pilih metode pembayaran terlebih dahulu.',
-            'payment_method.in'       => 'Pilihan metode pembayaran tidak valid.'
+            'payment_method.in'       => 'Pilihan metode pembayaran tidak valid.',
+            'cash_given.required_if'  => 'Silahkan masukkan jumlah uang tunai yang diterima.',
+            'cash_given.integer'      => 'Jumlah uang tunai tidak valid.',
+            'cash_given.min'          => 'Jumlah uang tunai tidak valid.',
         ]);
 
         if ($penjualan->status !== 'OPEN') {
@@ -136,20 +138,56 @@ class PenjualanController extends Controller
             return back()->with('error', 'Keranjang masih kosong.');
         }
 
-        DB::transaction(function () use ($penjualan, $request) {
-            // Hitung ulang total
-            $total = $penjualan->itemPenjualan()->sum('subtotal');
+        // Hitung ulang total di server (jangan percaya nilai dari client)
+        $total = $penjualan->itemPenjualan()->sum('subtotal');
 
+        $cashGiven = null;
+        $kembalian = null;
+
+        if ($request->payment_method === 'CASH') {
+            $cashGiven = (int) $request->cash_given;
+
+            if ($cashGiven < $total) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Uang tunai yang diterima kurang dari total tagihan.');
+            }
+
+            $kembalian = $cashGiven - $total;
+        }
+
+        DB::transaction(function () use ($penjualan, $request, $total, $cashGiven, $kembalian) {
             $penjualan->update([
                 'metode_pembayaran' => $request->payment_method,
                 'total_pembayaran'  => $total,
+                'cash_given'        => $cashGiven,
+                'kembalian'         => $kembalian,
                 'status'            => 'COMPLETED'
             ]);
         });
 
+        // Arahkan langsung ke halaman cetak nota agar kasir bisa langsung print
         return redirect()
-            ->route('penjualan.index')
+            ->route('penjualan.struk', $penjualan->id)
             ->with('success', 'Transaksi berhasil diselesaikan.');
+    }
+
+    /**
+     * Tampilkan nota / struk transaksi untuk dicetak.
+     */
+    public function struk(Penjualan $penjualan)
+    {
+        if ($penjualan->status !== 'COMPLETED') {
+            return redirect()
+                ->route('penjualan.edit', $penjualan->id)
+                ->with('error', 'Transaksi belum diselesaikan, silahkan checkout terlebih dahulu sebelum mencetak nota.');
+        }
+
+        $penjualan->load(['user', 'itemPenjualan.produk']);
+
+        return view('penjualan.struk', [
+            'sale' => $penjualan,
+        ]);
     }
 
     /**

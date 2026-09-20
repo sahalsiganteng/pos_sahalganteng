@@ -53,5 +53,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('/itempenjualan', ItemPenjualanController::class);
         Route::get('/admin/penjualan/{penjualan}', [PenjualanController::class, 'show'])
             ->name('admin.penjualan.show');
+
+        // Halaman cetak / print nota transaksi
+        Route::get('/penjualan/{penjualan}/struk', [PenjualanController::class, 'struk'])
+            ->name('penjualan.struk');
     });
 });

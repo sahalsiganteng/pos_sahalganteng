@@ -15,10 +15,18 @@
             </h2>
             <p class="text-secondary mb-0">Informasi ringkasan dan rincian barang transaksi penjualan.</p>
         </div>
-        <a href="{{ route('penjualan.index') }}" class="btn btn-outline-light border-secondary text-secondary-hover px-4 py-2 rounded-3 d-flex align-items-center gap-2 transition-all">
-            <i class="bi bi-arrow-left"></i>
-            <span>Kembali</span>
-        </a>
+        <div class="d-flex gap-2">
+            @if(strtoupper($penjualan->status ?? '') === 'COMPLETED')
+            <a href="{{ route('penjualan.struk', $penjualan) }}" class="btn btn-success px-4 py-2 rounded-3 d-flex align-items-center gap-2">
+                <i class="bi bi-printer-fill"></i>
+                <span>Cetak Nota</span>
+            </a>
+            @endif
+            <a href="{{ route('penjualan.index') }}" class="btn btn-outline-light border-secondary text-secondary-hover px-4 py-2 rounded-3 d-flex align-items-center gap-2 transition-all">
+                <i class="bi bi-arrow-left"></i>
+                <span>Kembali</span>
+            </a>
+        </div>
     </div>
 
     <!-- Informasi Ringkasan Transaksi -->
@@ -82,9 +90,10 @@
                         </td>
                         <td class="fw-semibold text-white">{{ $detail->produk->nama ?? 'Produk Dihapus' }}</td>
                         <td class="text-center">
-                            <span class="badge badge-qty px-3 py-1.5 rounded-pill">{{ $detail->jumlah }}</span>
+                            @php $qty = $detail->kuantitas ?? $detail->jumlah ?? 0; @endphp
+                            <span class="badge badge-qty px-3 py-1.5 rounded-pill">{{ $qty }}</span>
                         </td>
-                        <td class="text-end text-white">Rp {{ number_format($detail->harga_satuan ?? ($detail->subtotal / ($detail->jumlah ?: 1)), 0, ',', '.') }}</td>
+                        <td class="text-end text-white">Rp {{ number_format($detail->harga_satuan ?? ($detail->subtotal / ($qty ?: 1)), 0, ',', '.') }}</td>
                         <td class="pe-4 text-end fw-bold text-emerald">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
                     </tr>
                     @empty

@@ -130,11 +130,19 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
+                                    @if(strtoupper($sale->status ?? '') === 'COMPLETED')
+                                    <a href="{{ route('penjualan.struk', $sale) }}"
+                                       class="btn btn-action-print btn-sm rounded-2"
+                                       title="Cetak Nota">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+                                    @else
                                     <a href="{{ route('penjualan.edit', $sale) }}" 
                                        class="btn btn-action-edit btn-sm rounded-2" 
                                        title="Ubah Log">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
+                                    @endif
 
                                     <button type="button" 
                                             class="btn btn-action-delete btn-sm rounded-2" 
@@ -288,6 +296,16 @@
     }
     .btn-action-delete:hover {
         background: #ef4444;
+        color: #fff;
+    }
+
+    .btn-action-print {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .btn-action-print:hover {
+        background: #10b981;
         color: #fff;
     }
 
