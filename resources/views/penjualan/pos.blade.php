@@ -436,6 +436,23 @@
                         </div>
                     </div>
 
+                    <!-- Bagian Keranjang Belanja & Tabel Item -->
+<div class="col-md-5">
+    <!-- ... kode tabel keranjang ... -->
+
+    <!-- TEMPELKAN KODE INI DI SINI (Di bawah keranjang, sebelum pilihan metode pembayaran) -->
+    
+    <!-- BATAS PENEMPATAN -->
+
+    <!-- Bagian Metode Pembayaran / Cash -->
+    <div class="mb-3">
+        <label class="form-label">CASH (TUNAI)</label>
+        <!-- ... form input cash ... -->
+    </div>
+
+   
+</div>
+
                     {{-- Section Pembayaran --}}
                     <div class="pt-2">
                         {{-- Ringkasan Total --}}

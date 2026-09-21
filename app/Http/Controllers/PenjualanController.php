@@ -43,12 +43,7 @@ class PenjualanController extends Controller
      */
     public function create(SearchRequest $request)
     {
-        // "Transaksi Baru" SELALU membuat keranjang baru yang kosong (tidak pernah
-        // melanjutkan transaksi OPEN lama), lalu langsung redirect ke halaman edit
-        // transaksi tsb. Dengan begitu ID transaksi tertanam di URL address bar
-        // (bukan cuma di hidden input), sehingga aksi tambah/kurang/hapus produk
-        // dan pencarian selanjutnya selalu kembali ke transaksi yang benar --
-        // tidak lagi bergantung pada header Referer yang gampang meleset.
+        // "Transaksi Baru" SELALU membuat keranjang baru yang kosong
         $sale = Penjualan::create([
             'user_id'           => Auth::id(),
             'total_pembayaran'  => 0,
@@ -121,7 +116,7 @@ class PenjualanController extends Controller
     {
         $request->validate([
             'payment_method' => 'required|in:CASH,QRIS,TRANSFER',
-            'cash_given'      => 'nullable|required_if:payment_method,CASH|integer|min:0',
+            'cash_given'     => 'nullable|required_if:payment_method,CASH|integer|min:0',
         ], [
             'payment_method.required' => 'Silahkan pilih metode pembayaran terlebih dahulu.',
             'payment_method.in'       => 'Pilihan metode pembayaran tidak valid.',
@@ -138,8 +133,16 @@ class PenjualanController extends Controller
             return back()->with('error', 'Keranjang masih kosong.');
         }
 
-        // Hitung ulang total di server (jangan percaya nilai dari client)
-        $total = $penjualan->itemPenjualan()->sum('subtotal');
+        // Hitung subtotal belanjaan di server
+        $subtotalBelanja = $penjualan->itemPenjualan()->sum('subtotal');
+
+        // Otomatis diskon 10% jika total belanja di atas Rp 1.000.000
+        $diskon = 0;
+        if ($subtotalBelanja > 1000000) {
+            $diskon = $subtotalBelanja * 0.10;
+        }
+
+        $total = $subtotalBelanja - $diskon;
 
         $cashGiven = null;
         $kembalian = null;
@@ -166,7 +169,7 @@ class PenjualanController extends Controller
             ]);
         });
 
-        // Arahkan langsung ke halaman cetak nota agar kasir bisa langsung print
+        // Arahkan langsung ke halaman cetak nota
         return redirect()
             ->route('penjualan.struk', $penjualan->id)
             ->with('success', 'Transaksi berhasil diselesaikan.');

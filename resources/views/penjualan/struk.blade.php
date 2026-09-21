@@ -217,7 +217,7 @@
                 <span>{{ strtoupper($sale->metode_pembayaran) }}</span>
             </div>
 
-            @if($sale->metode_pembayaran === 'CASH' && !is_null($sale->cash_given))
+            @if(strtoupper($sale->metode_pembayaran) === 'CASH' && !is_null($sale->cash_given))
             <div class="struk-total-row">
                 <span>Tunai Diterima</span>
                 <span>Rp {{ number_format($sale->cash_given, 0, ',', '.') }}</span>
@@ -258,7 +258,44 @@
         const btnPrint = document.getElementById('btn-print-struk');
         if (btnPrint) {
             btnPrint.addEventListener('click', function () {
-                window.print();
+                const metodePembayaran = "{{ strtoupper($sale->metode_pembayaran) }}";
+
+                // Jika Anda ingin SEMUA jenis pembayaran dikonfirmasi dulu sebelum cetak:
+                if (typeof Swal !== 'undefined') {
+                    let titleText = 'Cetak Nota Transaksi?';
+                    let descText = 'Pastikan data pesanan dan pembayaran sudah sesuai sebelum mencetak.';
+
+                    // Kustom teks khusus jika QRIS
+                    if (metodePembayaran === 'QRIS') {
+                        titleText = 'Konfirmasi Pembayaran QRIS';
+                        descText = 'Pastikan dana dari pembayaran QRIS sudah masuk/terkonfirmasi sebelum mencetak struk.';
+                    }
+
+                    Swal.fire({
+                        title: titleText,
+                        text: descText,
+                        icon: 'question',
+                        iconColor: '#38bdf8',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Lanjutkan Cetak',
+                        cancelButtonText: 'Batal',
+                        customClass: {
+                            popup: 'dark-theme-popup',
+                            confirmButton: 'swal2-confirm-btn',
+                            cancelButton: 'swal2-cancel-btn'
+                        },
+                        buttonsStyling: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.print();
+                        }
+                    });
+                } else {
+                    // Fallback jika SweetAlert tidak ter-load
+                    if (confirm('Lanjutkan mencetak struk transaksi ini?')) {
+                        window.print();
+                    }
+                }
             });
         }
     });
