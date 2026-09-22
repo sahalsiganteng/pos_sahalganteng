@@ -255,7 +255,7 @@
 @section('content')
 <div class="container-fluid px-4 py-4">
 
-    <div class="pos-wrapper p-4"> 
+    <div class="pos-wrapper p-4">
 
         {{-- Header Banner --}}
         <div class="pos-header-banner p-3 p-md-4 mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
@@ -338,8 +338,8 @@
 
                                     {{-- Submit Button --}}
                                     <div class="col-3 col-sm-3">
-                                        <button type="submit" 
-                                            class="btn {{ $product->stok <= 0 ? 'btn-secondary' : 'btn-primary' }} w-100 fw-bold rounded-2 btn-submit-add" 
+                                        <button type="submit"
+                                            class="btn {{ $product->stok <= 0 ? 'btn-secondary' : 'btn-primary' }} w-100 fw-bold rounded-2 btn-submit-add"
                                             {{ ($sale->status === 'COMPLETED' || $product->stok <= 0) ? 'disabled' : '' }}>
                                             <i class="bi bi-plus-lg me-1"></i> <span class="btn-text">{{ $product->stok <= 0 ? 'Habis' : 'Tambah' }}</span>
                                         </button>
@@ -392,7 +392,7 @@
                                         </td>
                                         <td>
                                             <form method="POST" action="{{ route('itempenjualan.update', $item->id) }}">
-                                                @csrf 
+                                                @csrf
                                                 @method('PUT')
                                                 <input type="number"
                                                     name="quantity"
@@ -411,7 +411,7 @@
                                         <td class="text-center">
                                             @can('delete', $item)
                                             <form method="POST" action="{{ route('itempenjualan.destroy', $item->id) }}" class="form-delete-item">
-                                                @csrf 
+                                                @csrf
                                                 @method('DELETE')
                                                 <button type="button"
                                                     class="btn btn-outline-danger btn-sm border-0 btn-delete-item"
@@ -434,32 +434,40 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        {{-- ===================== RINGKASAN SUBTOTAL & DISKON =====================
+                             FIX: sebelumnya blok ini kosong (placeholder "TEMPELKAN KODE INI DI SINI"),
+                             sehingga $diskon yang sudah dihitung di controller tidak pernah ditampilkan. --}}
+                        <div class="mb-3">
+                            @if($diskon > 0)
+                            <div class="d-flex justify-content-between align-items-center px-1 mb-2">
+                                <span class="text-secondary fs-7 fw-semibold">Subtotal</span>
+                                <span class="font-monospace text-light">
+                                    Rp {{ number_format($subtotalBelanja, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center px-1">
+                                <span class="text-warning fs-7 fw-semibold">
+                                    <i class="bi bi-tag-fill me-1"></i> Diskon (10% belanja &gt; Rp1.000.000)
+                                </span>
+                                <span class="font-monospace fw-bold text-warning">
+                                    - Rp {{ number_format($diskon, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            @endif
+                        </div>
                     </div>
-
-                    <!-- Bagian Keranjang Belanja & Tabel Item -->
-<div class="col-md-5">
-    <!-- ... kode tabel keranjang ... -->
-
-    <!-- TEMPELKAN KODE INI DI SINI (Di bawah keranjang, sebelum pilihan metode pembayaran) -->
-    
-    <!-- BATAS PENEMPATAN -->
-
-    <!-- Bagian Metode Pembayaran / Cash -->
-    <div class="mb-3">
-        <label class="form-label">CASH (TUNAI)</label>
-        <!-- ... form input cash ... -->
-    </div>
-
-   
-</div>
 
                     {{-- Section Pembayaran --}}
                     <div class="pt-2">
-                        {{-- Ringkasan Total --}}
+                        {{-- Ringkasan Total
+                             FIX: sebelumnya pakai $sale->itemPenjualan->sum('subtotal') langsung (subtotal kotor,
+                             tanpa diskon). Sekarang pakai $totalBersih (subtotal - diskon) baik untuk tampilan
+                             maupun untuk data-total yang dipakai JS menghitung kembalian & validasi nominal cash. --}}
                         <div class="total-box p-3 mb-3 d-flex justify-content-between align-items-center">
                             <span class="fw-bold text-uppercase fs-7 text-white-50">Total Bayar</span>
-                            <span class="fs-2 font-monospace fw-bold" id="total-bayar-val" data-total="{{ $sale->itemPenjualan->sum('subtotal') }}">
-                                Rp {{ number_format($sale->itemPenjualan->sum('subtotal'), 0, ',', '.') }}
+                            <span class="fs-2 font-monospace fw-bold" id="total-bayar-val" data-total="{{ $totalBersih }}">
+                                Rp {{ number_format($totalBersih, 0, ',', '.') }}
                             </span>
                         </div>
 
@@ -482,7 +490,7 @@
                                     <option value="QRIS" {{ $selectedMethod === 'QRIS' ? 'selected' : '' }}>QRIS / NON-TUNAI</option>
                                     <option value="TRANSFER" {{ $selectedMethod === 'TRANSFER' ? 'selected' : '' }}>TRANSFER BANK</option>
                                 </select>
-                                
+
                                 @error('payment_method')
                                 <div class="invalid-feedback d-block">
                                     {{ $message }}
@@ -495,11 +503,11 @@
                                 <label class="form-label text-slate-300 fs-7 fw-semibold">Uang Diterima (Tunai)</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-dark border-end-0 border-secondary text-secondary">Rp</span>
-                                    <input type="number" 
-                                        name="cash_given" 
-                                        id="cash-given-input" 
-                                        class="form-control form-control-custom border-start-0 ps-2 font-monospace fw-bold text-white bg-dark" 
-                                        placeholder="0" 
+                                    <input type="number"
+                                        name="cash_given"
+                                        id="cash-given-input"
+                                        class="form-control form-control-custom border-start-0 ps-2 font-monospace fw-bold text-white bg-dark"
+                                        placeholder="0"
                                         min="0"
                                         value="{{ old('cash_given', $sale->cash_given ?? '') }}">
                                 </div>
@@ -597,8 +605,8 @@
 </div>
 
 {{-- Elemen Data Flash untuk JS --}}
-<div id="flash-data" 
-    data-success="{{ session('success') }}" 
+<div id="flash-data"
+    data-success="{{ session('success') }}"
     data-error="{{ session('error') }}"
     data-errors='@json($errors->any() ? $errors->all() : [])'>
 </div>
@@ -773,7 +781,7 @@
                 let val = parseInt(this.value);
 
                 if (val > maxStok) {
-                    this.value = maxStok; 
+                    this.value = maxStok;
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
@@ -799,7 +807,7 @@
                     searchForm.submit();
                 }, 500);
             });
-            
+
             const val = searchInput.value;
             searchInput.value = '';
             searchInput.focus();

@@ -21,11 +21,9 @@ class PenjualanController extends Controller
 
         $sales = Penjualan::query()
             ->with('user')
-            // Filter berdasarkan role
             ->when($user->role && strtolower($user->role->name) === 'kasir', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
-            // Search nama user
             ->when($keyword, function ($query) use ($keyword) {
                 $query->whereHas('user', function ($q) use ($keyword) {
                     $q->where('name', 'like', '%' . $keyword . '%');
@@ -43,7 +41,6 @@ class PenjualanController extends Controller
      */
     public function create(SearchRequest $request)
     {
-        // "Transaksi Baru" SELALU membuat keranjang baru yang kosong
         $sale = Penjualan::create([
             'user_id'           => Auth::id(),
             'total_pembayaran'  => 0,
@@ -68,8 +65,6 @@ class PenjualanController extends Controller
     public function show(Penjualan $penjualan)
     {
         $sale = $penjualan;
-
-        // Load relasi user dan itemPenjualan beserta produknya
         $penjualan->load(['user', 'itemPenjualan.produk']);
         
         $produk = Produk::orderBy('nama')->get();
@@ -85,7 +80,6 @@ class PenjualanController extends Controller
     {
         $sale = $penjualan;
 
-        // MENGATASI ERROR 403: Redirect ramah jika status transaksi sudah COMPLETED
         if ($sale->status === 'COMPLETED') {
             return redirect()
                 ->route('penjualan.index')
@@ -93,6 +87,15 @@ class PenjualanController extends Controller
         }
 
         $sale->load(['user', 'itemPenjualan.produk']);
+
+        // --- PERHITUNGAN DISKON OTOMATIS DI HALAMAN POS ---
+        $subtotalBelanja = $sale->itemPenjualan()->sum('subtotal');
+        $diskon = 0;
+        if ($subtotalBelanja > 1000000) {
+            $diskon = $subtotalBelanja * 0.10;
+        }
+        $totalBersih = $subtotalBelanja - $diskon;
+        // -------------------------------------------------
 
         $keyword = $request->input('search');
 
@@ -106,7 +109,16 @@ class PenjualanController extends Controller
 
         $mode = 'edit';
 
-        return view('penjualan.pos', compact('sale', 'penjualan', 'produk', 'mode'));
+        // Sertakan variabel diskon ke compact agar terbaca di view
+        return view('penjualan.pos', compact(
+            'sale', 
+            'penjualan', 
+            'produk', 
+            'mode', 
+            'subtotalBelanja', 
+            'diskon', 
+            'totalBersih'
+        ));
     }
 
     /**
@@ -133,10 +145,8 @@ class PenjualanController extends Controller
             return back()->with('error', 'Keranjang masih kosong.');
         }
 
-        // Hitung subtotal belanjaan di server
         $subtotalBelanja = $penjualan->itemPenjualan()->sum('subtotal');
 
-        // Otomatis diskon 10% jika total belanja di atas Rp 1.000.000
         $diskon = 0;
         if ($subtotalBelanja > 1000000) {
             $diskon = $subtotalBelanja * 0.10;
@@ -169,7 +179,6 @@ class PenjualanController extends Controller
             ]);
         });
 
-        // Arahkan langsung ke halaman cetak nota
         return redirect()
             ->route('penjualan.struk', $penjualan->id)
             ->with('success', 'Transaksi berhasil diselesaikan.');
